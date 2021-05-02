@@ -1,142 +1,204 @@
-<div class="content">
-    <ngx-spinner bdColor="rgba(51,51,77,0.8)" size="medium" color="#fffvv" type="ball-scale-multiple">
-        <p style="font-size: 20px; color: rgb(255, 255, 255)">Loading...</p>
-    </ngx-spinner>
-    <div class="container mt-3 mb-3">
-        <div class="col-12 pt-3">
-            <form #GlobalFiltersForm="ngForm" (submit)="GlobalFiltersForm.form.valid && search()" novalidate>
-                <div class="row">
-                    <div class="col-12 col-md-2">
-                        <div class="form-group pl-0">
-                            <label class="col-form-label">Week Of: </label>
-                            <div>
-                                <div class="input-group">
-                                    <input class="form-control" placeholder="mm/dd/yyyy" readonly name="fromDateVal"
-                                        required #fromDateVal="ngModel" (click)="fromDate.toggle()"
-                                        [(ngModel)]="employeeSearchModel.DateFrom" ngbDatepicker
-                                        #fromDate="ngbDatepicker" [markDisabled]="disableDateFrom">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary" (click)="fromDate.toggle()"
-                                            type="button">
-                                            <i class="fa fa-calendar"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-danger" *ngIf="( GlobalFiltersForm.submitted && fromDateVal.errors?.required)">
-                            Field is required *
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-2">
-                        <div class="form-group pl-0">
-                            <label class="col-form-label">Work Period: </label>
-                            <div>
-                                <select class="form-control" [(ngModel)]="employeeSearchModel.WorkPeriod"
-                                    name="WorkPeriodVal" required #WorkPeriodVal="ngModel"
-                                    (change)="onChange('WorkPeriod',$event.target.value)">
-                                    <option *ngFor="let data of workPeriod" [value]="data.id">
-                                        {{data.name}}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="text-danger"
-                            *ngIf="( GlobalFiltersForm.submitted && WorkPeriodVal.errors?.required)">
-                            Field is required *
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-2" *ngFor="let filter of filterSelectObj; let i = index">
-                        <div class="form-group pl-0">
-                            <label class="col-form-label">{{filter.name}}: </label>
-                            <div>
-                                <mat-form-field style="width: 100%;">
-                                    <mat-label>{{filter.name}}</mat-label>
-                                    <mat-select #matSelect multiple [formControl]="filter.formCtrl"
-                                        [(ngModel)]="filter.preSelected" required
-                                        (selectionChange)="populateHeadQuarters($event.value, $event.source.id)">
-                                        <mat-option *ngFor="let item of filter.options" [value]="item.id">{{item.name}}
-                                        </mat-option>
-                                        <button class="btn btn-primary btn-sm m-2" (click)="ok(i, filter)">Ok</button>
-                                        <button class="btn btn-primary btn-sm"
-                                            (click)="cancel(i, filter)">Cancel</button>
-                                    </mat-select>
-                                </mat-form-field>
-                                <div class="text-danger"
-                                    *ngIf="( GlobalFiltersForm.submitted && filter.formCtrl.errors?.required)">
-                                   Field is required *
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-2">
-                        <div class="form-group pl-0">
-                            <label class="col-form-label">Energy: </label>
-                            <div>
-                                <select class="form-control" [(ngModel)]="employeeSearchModel.EnergyTypeId"
-                                    name="EnergyTypeIdVal" required #EnergyTypeIdVal="ngModel"
-                                    (change)="onChange('EnergyTypeId',$event.target.value)">
-                                    <option *ngFor="let data of dropDownData | ddlFilter : 'EnergyType'"
-                                        [value]="data.id">
-                                        {{data.name}}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="text-danger"
-                            *ngIf="( GlobalFiltersForm.submitted && EnergyTypeIdVal.errors?.required)">
-                            Field is required *
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-2 pt-5">
-                        <div class="form-group">
-                            <div class="col text-center">
-                                <button type="submit" class="btn btn-primary btn-sm mr-2">Search</button>
-                                <button type="reset" class="btn btn-primary btn-sm"
-                                    (click)="resetSearchData(GlobalFiltersForm)">Reset</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
+import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
+import { Router } from '@angular/router';
+import { SchedulerService } from 'src/app/core/services/scheduler.service';
+import { EmployeeSearchModel } from 'src/app/shared/models/search.model';
+import { OrderSearchModel } from 'src/app/shared/models/search.model';
+import { NgbCalendar, NgbDate } from '@ng-bootstrap/ng-bootstrap';
+import { FilterByDropDownNamePipe } from 'src/app/shared/pipes/ddlfilter.pipe';
+import { FilterService } from 'src/app/shared/services/filter.service';
+import { Observable, Subject } from 'rxjs';
+import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { OrderListComponent } from 'src/app/components/workload/order-list/order-list.component';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
-        <div class="row">
-            <div class="col-12 pt-3">
-                <!-- Nav tabs -->
-                <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active" data-toggle="tab" data-target="#tab-workforce-content"
-                            (click)="redirectToTab('workforce')" id="tab-workforce" aria-expanded="true"
-                            aria-selected="true" aria-controls="tab-workforce">
-                            Workforce</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" data-target="#tabContent"
-                            (click)="redirectToTab('workload')">Workload</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" data-target="#tabContent"
-                            (click)="redirectToTab('scheduler')">Scheduler</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" data-target="#tabContent"
-                            (click)="redirectToTab('routeSheet')">Route Sheet</a>
-                    </li>
+type typeCaretTitle = 'Collapse Search' | 'Expand Search';
+type typeCaretStyle = 'fa fa-caret-down' | 'fa fa-caret-left';
 
-                    <li class="nav-item ml-auto">
-                        <button type="button" class="btn btn-primary ml-2" (click)="expandCollapseSearch()"
-                            [title]="caretTitle"><i [ngClass]="caretStyle"></i></button>
-                    </li>
-                </ul>
-            </div>
+@Component({
+  selector: 'master',
+  templateUrl: './master.component.html'
+})
+export class MasterComponent {
+  @ViewChildren('matSelect') matSelect: QueryList<ElementRef>;
 
-            <div class="col-12 pt-3">
-                <!-- Tab panes -->
-                <div class="tab-content">
-                    <router-outlet></router-outlet>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+  private orderList: OrderListComponent;
+
+  formCtrlWMC = new FormControl();
+  formCtrlHeadQuarter = new FormControl();
+
+  employeeSearchModel: EmployeeSearchModel;
+  orderSearchModel: OrderSearchModel;
+
+  employeeList: any;
+  headQuarters: any;
+  dropDownData: any;
+  workPeriod: any;
+  caretStyle: typeCaretStyle = 'fa fa-caret-down';
+  caretTitle: typeCaretTitle = 'Collapse Search';
+  disableDateFrom;
+  filterValues = {};
+  filterSelectObj = [];
+  selectedTab: string;
+  storage: Storage;
+
+
+  constructor(private router: Router, private schedulerService: SchedulerService,
+    private filterByDropDownNamePipe: FilterByDropDownNamePipe,
+    private filterService: FilterService,
+    private ngbCalendar: NgbCalendar,
+    private spinner: NgxSpinnerService) {
+    this.storage = window.localStorage;
+    this.employeeSearchModel = new EmployeeSearchModel();
+    this.disableDateFrom = (date: NgbDate) => ngbCalendar.getWeekday(date) != 1;//enable only mondays
+    this.workPeriod = [{ id: "Week", name: "Week" }, { id: "WeekEnd", name: "WeekEnd" }, { id: "Both", name: "Both" }];
+    // Object to create Filter for
+    this.filterSelectObj = [
+      {
+        name: 'WMC',
+        columnProp: 'WmcId',
+        preSelected: [],
+        options: [],
+        formCtrl: this.formCtrlWMC
+      },
+      {
+        name: 'Headquarters',
+        columnProp: 'HeadquarterId',
+        preSelected: [],
+        options: [],
+        formCtrl: this.formCtrlHeadQuarter
+      },
+    ]
+  }
+
+  ngOnInit() {
+    this.redirectToTab('workforce');
+    this.getDataForDropDowns();
+  }
+
+  getDataForDropDowns(): void {
+    this.schedulerService.getDropdownData('workforce').subscribe((res) => {
+      this.filterSelectObj[0].options = this.filterByDropDownNamePipe.transform(res.dropdownDetails, 'WMC');
+      this.dropDownData = res.dropdownDetails;
+      //this.userPreferences = res.userPreference;
+      this.setDefaultFilterValue();
+      if (res.userPreference) {
+        this.employeeSearchModel.WmcId = res.userPreference.wmcId;
+        this.populateHeadQuarters(res.userPreference.wmcId, '');
+        this.employeeSearchModel.HeadquarterId = res.userPreference.hqId;
+        //this.employeeSearchModel.WorkPeriod = res.userPreference.workPeriod;
+        // this.employeeSearchModel.EnergyTypeId = res.userPreference.EnergyTypeId;
+      }
+    });
+  }
+
+  setDefaultFilterValue() {
+    this.filterValues = JSON.parse(this.storage.getItem(this.selectedTab));
+       if (this.filterValues) {
+      this.employeeSearchModel.DateFrom = this.filterValues["DateFrom"];
+      this.employeeSearchModel.WorkPeriod = this.filterValues["WorkPeriod"];
+      this.employeeSearchModel.EnergyTypeId = this.filterValues["EnergyTypeId"];
+      this.filterSelectObj[0].preSelected = this.filterValues["WmcId"];
+      this.populateHeadQuarters(this.filterSelectObj[0].preSelected, 'mat-select-0')
+      this.filterSelectObj[1].preSelected = this.filterValues["HeadquarterId"];
+    }
+    else {
+      this.resetSearchData("GlobalFiltersForm");
+    }
+  }
+
+  redirectToTab(tabName) {
+    this.reset();
+    this.selectedTab = tabName;
+    this.schedulerService.tabName = tabName;
+    this.router.navigate(['/landing/' + tabName]);
+  }
+
+  expandCollapseSearch() {
+    this.schedulerService.expandSearch = !this.schedulerService.expandSearch;
+    this.caretStyle = this.schedulerService.expandSearch ? 'fa fa-caret-down' : 'fa fa-caret-left';
+    this.caretTitle = this.schedulerService.expandSearch ? 'Collapse Search' : 'Expand Search';
+  }
+
+  resetSearchData(frm): void {
+    frm.submitted = false;
+
+    Object.keys(this.employeeSearchModel).forEach(
+      (key) => (this.employeeSearchModel[key] = '')
+    );
+
+    // // On reset clear localstorage values    
+    this.storage.setItem(this.selectedTab, null);
+    this.filterService.resetCrewDetails();
+    this.filterService.resetOrderDetails();
+
+
+    this.filterSelectObj[0].preSelected = [];
+    this.filterSelectObj[1].preSelected = [];
+    this.filterSelectObj[2].preSelected = [];
+  }
+
+  // Called on Filter change and ok/cancel is clicked
+  filterChange(col, val) {
+    if (!this.filterValues) {
+      this.filterValues = {};
+    }
+
+    this.filterValues[col] = val;
+    // this.dataSource.filter = JSON.stringify(this.filterValues);
+  }
+
+  cancel(index, filter) {
+    filter.formCtrl.setValue('');
+    this.filterChange(filter.columnProp, filter.formCtrl.value);
+    this.matSelect['_results'][index].close();
+  }
+
+  ok(index, filter) {
+    this.filterChange(filter.columnProp, filter.formCtrl.value);
+    this.matSelect['_results'][index].close();
+  }
+
+  reset() {
+    this.schedulerService.expandSearch = true;
+    this.caretStyle = 'fa fa-caret-down';
+    this.caretTitle = 'Expand Search';
+  }
+
+  onChange(col: string, value: any): void {
+    this.filterChange(col, value);
+  }
+
+  /**
+  * Populated HeadQuarters on WMC selection
+  */
+  populateHeadQuarters(wmcIds: string[], elementId: any) {
+    if (elementId && elementId === 'mat-select-0') {
+      this.filterSelectObj[1].options = [];
+      for (var i = 0, len = wmcIds.length; i < len; i++) {
+        var hqIds = this.dropDownData.filter(headquarter => headquarter.dropdownName === 'Headquarter' && headquarter.wmcId == wmcIds[i]);
+        for (var j = 0, l = hqIds.length; j < l; j++) {
+          this.filterSelectObj[1].options.push(hqIds[j]);
+        }
+      }
+    }
+  }
+
+  /**
+  * Method to set all filter data information
+  * returns void
+  */
+  search(): void {
+
+    this.spinner.show();
+
+    this.filterValues["DateFrom"] = this.employeeSearchModel.DateFrom;
+    this.filterValues["WmcId"] = this.filterSelectObj[0].preSelected;
+    this.filterValues["HeadquarterId"] = this.filterSelectObj[1].preSelected;
+    this.filterValues["WorkPeriod"] = this.employeeSearchModel.WorkPeriod;
+    this.filterValues["EnergyTypeId"] = this.employeeSearchModel.EnergyTypeId;
+
+    this.storage.setItem(this.selectedTab, JSON.stringify(this.filterValues));
+    this.filterService.updatedDataSelection(this.filterValues);
+  }
+}
