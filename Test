@@ -1,46 +1,44 @@
-<div class="modal-header">
-  <h4 class="modal-title">
-    Edit Employee: <span class="small">{{inputEmployeeInfo.name}}</span>
-  </h4>
-  <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('close')" ngAutoFocus="false">
-    <span aria-hidden="true">&times;</span>
-  </button>
-</div>
-<div class="modal-body">
-  <div class="col-12 pt-3">
-    <div class="row">
-        <div class="col-md-5">
-            <div class="form-group row">
-                <label class="col-md-5 col-form-label text-md-right">Active: </label>
-                <div class="col-md-7 pt-2">
-                    <input type="checkbox" [checked]="isActive" [(ngModel)]="isActive"/>
-                </div>
-            </div>
-        </div>
+import { Component, Input } from '@angular/core';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { SchedulerService } from 'src/app/core/services/scheduler.service';
+import { CrewUpdateModel } from './../../../shared/models/search.model';
 
-        <div class="col-md-7">
-            <div class="form-group row">
-                <label class="col-md-4 col-form-label text-md-right">Employee Type: </label>
-                <div class="col-sm-5">
-                    <select class="form-control" [(ngModel)]="inputEmployeeInfo.employeeTypeId">
-                        <option *ngFor="let data of dropDownData | ddlFilter : 'CrewType'" [value]="data.id"> 
-                          {{data.name}}
-                        </option>
-                    </select>
-                </div>
-            </div>
-        </div>
+@Component({
+  selector: 'employee-edit',
+  templateUrl: './employee-edit.component.html'
+})
+export class EmployeeEditComponent {
+  @Input() public inputEmployeeInfo: any;
+  dropDownData : any;
+  isActive: boolean;
+  crewUpdateModel: CrewUpdateModel;
 
-    </div>
-  </div>
-</div>
-<div class="modal-footer">
-  <div class="container">
-    <div class="row">
-      <div class="col text-center">
-        <button type="button" class="btn btn-primary btn-sm mr-2" (click)="updateCrewInfo()">Save</button>
-        <button type="button" class="btn btn-primary btn-sm" (click)="activeModal.close('close')">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
+  constructor(public activeModal: NgbActiveModal, private schedulerService: SchedulerService){
+  }
+
+  ngOnInit() {
+    this.getDataForDropDowns();
+    this.isActive = this.inputEmployeeInfo.status == 'Active' ? true : false;
+  }
+
+  getDataForDropDowns(){
+    this.schedulerService.getCrewType().subscribe(
+      (res) => {
+        this.dropDownData = res.dropdownDetails;
+      }
+    );
+  }
+
+  updateCrewInfo(){
+    this.crewUpdateModel = new CrewUpdateModel();
+    this.crewUpdateModel.Active = this.isActive ? 1 : 0;
+    this.crewUpdateModel.EmployeeClassficationId = this.inputEmployeeInfo.employeeTypeId;
+    this.crewUpdateModel.Id = this.inputEmployeeInfo.id;
+    this.schedulerService.updateCrewInfo(this.crewUpdateModel).subscribe(
+      (res) => {
+        console.log(res);
+        this.activeModal.close('save');
+      }
+    )
+  }
+}
