@@ -1,46 +1,23 @@
-<!-- <div>
-    crew composition
-    <pre>{{inputSelectedCrewMembers|json}}</pre>
-</div> -->
-<div *ngIf="displayCrewComposition">
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Crew</th>
-                <th>Mon</th>
-                <th>Tues</th>
-                <th>Wed</th>
-                <th>Thur</th>
-                <th>Fri</th>
-                <th>Sat</th>
-                <th>Sun</th>
-            </tr>
-        </thead>
-        <tbody>
-                <tr *ngFor="let crew of lstCrew">
+import { SchedulerService } from 'src/app/core/services/scheduler.service';
+import { Component } from '@angular/core';
 
-                <td style="background-color: #e9ecef;">
-                    <p *ngFor="let crewMem of crew">
-                        <input type="radio" name="crewMemName" [checked]="crewMem.employeeType=='Line Worker in Charge'"/> 
-                        {{crewMem.name}}
-                    </p>
-                </td>
-                <td>
-                    <!-- <p>Available Capacity: <span style="font-weight: bold;">{{crewMem.mon}}</span></p> -->
-                </td>
-                <td>
-                </td>
-                <td>
-                </td>
-                <td>
-                </td>
-                <td>
-                </td>
-                <td>
-                </td>
-                <td>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+@Component({
+  selector: 'crew-composition',
+  templateUrl: './crew-composition.component.html'
+})
+export class CrewCompositionComponent {
+  lstCrew: any = [];
+  displayCrewComposition: boolean = false;
+
+  constructor(private schedulerService: SchedulerService){
+    
+  }
+
+  ngOnInit() {
+    this.schedulerService.formCrewSubject.subscribe(() => {
+      this.displayCrewComposition = true;
+      this.lstCrew.push(this.schedulerService.selectedCrewMembers);
+      this.schedulerService.selectedCrewMembers = [];
+    });
+  }
+}
