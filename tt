@@ -1,9 +1,105 @@
-<div aria-labelledby="tab-workforce" id="tab-workforce-content" class="tab-pane fade active show" role="tabpanel"
-    [hidden]="!schedulerService.expandSearch">
-</div>
-<div class="row mt-3">
-    <div class="col-12">
-        <order-list *ngIf="displayOrderList" [inputOrderList]="orderList" (outputOrderList)="reloadOrder()">
-        </order-list>
-    </div>
-</div>
+import { Component, OnInit } from '@angular/core';
+
+import { OrderSearchModel } from './../../shared/models/search.model';
+import { SchedulerService } from './../../core/services/scheduler.service';
+import { FilterService } from 'src/app/shared/services/filter.service';
+import { Subscription } from 'rxjs';
+import { NgxSpinnerService } from 'ngx-spinner';
+
+@Component({
+  selector: 'app-workload',
+  templateUrl: './workload.component.html',
+})
+export class WorkloadComponent implements OnInit {
+  private subscription: Subscription;
+  orderSearchModel: OrderSearchModel;
+  dropDownData: any;
+  orderList: any;
+  displayOrderList: boolean;
+  headQuarters: any;
+
+  constructor(public schedulerService: SchedulerService,
+    private filterService: FilterService,
+    private spinner: NgxSpinnerService
+    ) {}
+
+  ngOnInit(): void {
+    this.orderSearchModel = new OrderSearchModel();
+    this.getDataForDropDowns();
+    this.subscription = this.filterService.data.subscribe(data => {
+        if (data && this.schedulerService?.tabName == 'workload') {
+          this.orderSearchModel.DateFrom = data.DateFrom;
+          this.orderSearchModel.DateTo = '4/11/2020';
+  
+          this.orderSearchModel.WorkPeriod = data.WorkPeriod;
+          this.orderSearchModel.WmcId = this.parseHeadquarterAndWmcDetails(data.WmcId);
+          this.orderSearchModel.HeadquarterId = this.parseHeadquarterAndWmcDetails(data.HeadquarterId);
+        this.orderSearchModel.WmcId = data.WmcId;
+        this.orderSearchModel.EnergyTypeId = data.EnergyTypeId;
+        this.orderSearchModel.HeadquarterId = data.HeadquarterId;
+        this.searchOrders();
+      }
+    });
+  }
+
+  parseHeadquarterAndWmcDetails(ids: string[]): string {
+    if(!ids || ids.length === 0) {
+      return '';
+    }
+    var output = ids[0];
+    for(var i=1, len = ids.length; i < len; i++)
+    {
+        output += ',' + ids[i];
+    }
+    return output;
+  }
+
+  getDataForDropDowns(): void {
+    this.schedulerService.getDropdownData('workload').subscribe((res) => {
+      this.dropDownData = res.dropdownDetails;
+
+      if(res.userPreference) {
+        this.orderSearchModel.WmcId = res.userPreference.wmcId;
+        this.populateHeadQuarters(res.userPreference.wmcId);
+        this.orderSearchModel.HeadquarterId = res.userPreference.hqId;
+        this.orderSearchModel.EnergyTypeId = res.userPreference.energyId;
+      }
+    });
+  }
+
+  searchOrders(): void {
+    this.displayOrderList = false;
+    this.schedulerService
+      .getOrdersData(this.orderSearchModel)
+      .subscribe((res) => {
+        this.orderList = res.orderDetails;
+        this.displayOrderList = true;
+
+        this.spinner.hide();
+      });
+  }
+
+  resetSearchData(): void {
+    Object.keys(this.orderSearchModel).forEach(
+      (key) => (this.orderSearchModel[key] = '')
+    );
+
+    this.displayOrderList = false;
+  }
+
+  reloadOrder(): void {
+    alert('refresh order list');
+    this.searchOrders();
+  }
+
+    /**
+   * Populated HeadQuarters on WMC selection
+   */
+  populateHeadQuarters(wmcId: any) {
+    this.headQuarters = this.dropDownData.filter(headquarter => headquarter.dropdownName === 'Headquarter' && headquarter.wmcId == wmcId);
+  }
+
+  ngOnDestory():void{
+    this.subscription.unsubscribe();
+  }
+}
