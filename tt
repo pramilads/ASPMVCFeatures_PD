@@ -1,50 +1,125 @@
-import { Directive, Input, Output, EventEmitter, HostBinding, HostListener } from '@angular/core';
+import { environment } from './../../../environments/environment';
+import { BusyService } from './../../shared/services/busy.service';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, Subject } from 'rxjs';
+import { finalize, map } from 'rxjs/operators';
+import { OrdersToSchedule, User } from './../../shared/models/search.model';
 
-export type SortDirection = 'asc' | 'desc' | '';
-const rotate: {[key: string]: SortDirection} = { 'asc': 'desc', 'desc': '', '': 'asc' };
-
-export const compare = (a: object, b: object, columnsToSort) => 
-{
-    let columns = Object.keys(columnsToSort).filter(key => columnsToSort[key] !== '');
-    let res;
-    for(let col of columns){
-      res = a[col] > b[col] ? 1 : a[col] < b[col] ? -1 : 0;
-      if (res == 0)
-        continue;//continue and compare the data in next column
-      else 
-      {      
-        return (columnsToSort[col] == 'asc') ? res : -res;
-      }
-    } 
-};
-
-export interface SortEvent {
-  column: string;
-  direction: SortDirection;
-}
-
-@Directive({
-  selector: 'th[sortable]'
+@Injectable({
+  providedIn: 'root',
 })
-export class NgbdSortableHeader {
+export class SchedulerService {
+  expandSearch = true;
+  tabName: string;
+  username: string;
+  //shared properties
+  mapToCrew: any = null;
+  showLoadingIndicator = new Subject<any>();
+  formCrewSubject = new Subject<any>();
+  selectedCrewMembers: any = [];
 
-  @Input() sortable: string = '';
-  @Input() direction: SortDirection = '';
-  @Output() sort = new EventEmitter<SortEvent>();
+  constructor(
+    private httpClient: HttpClient,
+    private busyService: BusyService
+  ) { }
 
-  @HostBinding('class.asc')
-  get ascClass(){
-      return this.direction === 'asc';
+  getDropdownData(tabName): Observable<any> {
+
+    return this.httpClient.get<any>(
+      environment.baseUrl + `workforce/getDropdownData?tabName=${tabName}`, { withCredentials: true }
+    );
   }
 
-  @HostBinding('class.desc')
-  get descClass(){
-      return this.direction === 'desc';
+  getCrewType(): Observable<any> {
+    return this.httpClient.get(environment.baseUrl + `workforce/getCrewType`,
+    {  withCredentials: true }
+  );
   }
 
-  @HostListener('click')
-  rotate() {
-    this.direction = rotate[this.direction];
-    this.sort.emit({column: this.sortable, direction: this.direction});
+  /**
+   * Method to get crew information
+   * @returns void
+   */
+   getCrewInfo(searchModel): Observable<any> {
+    return this.httpClient.get<any>(
+      environment.baseUrl + `workforce/getCrewInfo`,
+      { params: searchModel, withCredentials: true }
+    );
+    // return this.httpClient.get('assets/mockdata/employeeData.json');
+  }
+
+  getOrdersData(searchModel): Observable<any> {
+    this.showLoadingIndicator.next(true);
+    return this.httpClient
+      .get<any>(environment.baseUrl + 'workload/getorderdetails', {
+        params: searchModel,withCredentials: true,
+      })
+      .pipe(
+        map((r) => {
+          return r;
+        })
+      )
+      .pipe(finalize(() => this.showLoadingIndicator.next(false)));
+    //return this.httpClient.get('assets/mockdata/orderData.json');
+  }
+
+  /**
+   * Method to update the order details
+   * @param orderDetailsUpdateRequest
+   */
+  updateOrderDetails(orderDetailsUpdateRequest): Observable<any> {
+    return this.httpClient.post(
+      environment.baseUrl + 'workload/updateorderdetails',
+      orderDetailsUpdateRequest
+    );
+  }
+
+  saveOrderDetails(orderDetailSaveRequest) {
+    return this.httpClient.post(
+      environment.baseUrl + 'workload/saveorderdetails',
+      orderDetailSaveRequest
+    );
+  }
+
+  getOrdersForScheduling(searchModel): Observable<any> {
+    return this.httpClient.get(
+      environment.baseUrl + 'workload/getorderdetails',
+      {params: searchModel,   withCredentials: true },
+    );
+    //return this.httpClient.get('assets/mockdata/orderData.json');
+  }
+
+  getCrewsForScheduling(searchModel): Observable<any> {
+    return this.httpClient.get('assets/mockdata/crewData.json');
+  }
+
+  updateCrewInfo(crewInfoUpdateRequest): Observable<any> {
+    return this.httpClient.post(
+      environment.baseUrl + 'workforce/updatecrewinfo',
+      crewInfoUpdateRequest
+    );
+  }
+
+  /**
+   * Method to get Work management center details
+   */
+  getWorkManagementCenterDetails(): Observable<any> {
+    return this.httpClient.get(environment.baseUrl + 'workforce/getwmcdetails');
+  }
+
+  getScheduledCrews() {
+    return this.httpClient.get('assets/mockdata/routeSheetData.json');
+  }
+
+  saveOrdersForScheduling(ordersSelectedForScheduling) {
+    return this.httpClient.post(
+      environment.baseUrl + 'workload/saveordersforscheduling',
+      ordersSelectedForScheduling
+    );
+  }
+
+  validateUser(): Observable<any> {
+    return this.httpClient.get<User>(environment.baseUrl + 'Auth/validate', { withCredentials: true });
   }
 }
