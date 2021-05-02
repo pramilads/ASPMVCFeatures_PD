@@ -1,125 +1,61 @@
-import { environment } from './../../../environments/environment';
-import { BusyService } from './../../shared/services/busy.service';
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
-import { finalize, map } from 'rxjs/operators';
-import { OrdersToSchedule, User } from './../../shared/models/search.model';
+import { NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+
+/*
+ * This Service handles how the date is represented in scripts i.e. ngModel.
+ */
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root'
 })
-export class SchedulerService {
-  expandSearch = true;
-  tabName: string;
-  username: string;
-  //shared properties
-  mapToCrew: any = null;
-  showLoadingIndicator = new Subject<any>();
-  formCrewSubject = new Subject<any>();
-  selectedCrewMembers: any = [];
+export class CustomDateAdapter extends NgbDateAdapter<string>{
+    readonly DELIMITER = '/';
 
-  constructor(
-    private httpClient: HttpClient,
-    private busyService: BusyService
-  ) { }
+    fromModel(value: string | null): NgbDateStruct | null {
+        if (value){
+            let date = value.split(this.DELIMITER);
+            return {
+                month: parseInt(date[0], 10),
+                day: parseInt(date[1], 10),
+                year: parseInt(date[2], 10)
+            };
+        }
+        return null;
+    }
 
-  getDropdownData(tabName): Observable<any> {
+    toModel(date: NgbDateStruct | null) : string | null {
+        return date ? date.month + this.DELIMITER + 
+                      date.day + this.DELIMITER + 
+                      date.year
+                    : null;
+    }
+}
 
-    return this.httpClient.get<any>(
-      environment.baseUrl + `workforce/getDropdownData?tabName=${tabName}`, { withCredentials: true }
-    );
-  }
+/*
+ * This Service handles how the date is rendered and parsed from keyboard i.e. in the bound input field.
+ */
+@Injectable({
+    providedIn: 'root'
+})
+export class CustomDateParserFormatter extends NgbDateParserFormatter{
+    readonly DELIMITER = '/';
 
-  getCrewType(): Observable<any> {
-    return this.httpClient.get(environment.baseUrl + `workforce/getCrewType`,
-    {  withCredentials: true }
-  );
-  }
+    parse(value: string): NgbDateStruct | null {
+        if (value) {
+            let date = value.split(this.DELIMITER);
+            return {
+                month: parseInt(date[0], 10),
+                day: parseInt(date[1], 10),
+                year: parseInt(date[2], 10)
+            };
+        }
+        return null;
+    }
 
-  /**
-   * Method to get crew information
-   * @returns void
-   */
-   getCrewInfo(searchModel): Observable<any> {
-    return this.httpClient.get<any>(
-      environment.baseUrl + `workforce/getCrewInfo`,
-      { params: searchModel, withCredentials: true }
-    );
-    // return this.httpClient.get('assets/mockdata/employeeData.json');
-  }
-
-  getOrdersData(searchModel): Observable<any> {
-    this.showLoadingIndicator.next(true);
-    return this.httpClient
-      .get<any>(environment.baseUrl + 'workload/getorderdetails', {
-        params: searchModel,withCredentials: true,
-      })
-      .pipe(
-        map((r) => {
-          return r;
-        })
-      )
-      .pipe(finalize(() => this.showLoadingIndicator.next(false)));
-    //return this.httpClient.get('assets/mockdata/orderData.json');
-  }
-
-  /**
-   * Method to update the order details
-   * @param orderDetailsUpdateRequest
-   */
-  updateOrderDetails(orderDetailsUpdateRequest): Observable<any> {
-    return this.httpClient.post(
-      environment.baseUrl + 'workload/updateorderdetails',
-      orderDetailsUpdateRequest
-    );
-  }
-
-  saveOrderDetails(orderDetailSaveRequest) {
-    return this.httpClient.post(
-      environment.baseUrl + 'workload/saveorderdetails',
-      orderDetailSaveRequest
-    );
-  }
-
-  getOrdersForScheduling(searchModel): Observable<any> {
-    return this.httpClient.get(
-      environment.baseUrl + 'workload/getorderdetails',
-      {params: searchModel,   withCredentials: true },
-    );
-    //return this.httpClient.get('assets/mockdata/orderData.json');
-  }
-
-  getCrewsForScheduling(searchModel): Observable<any> {
-    return this.httpClient.get('assets/mockdata/crewData.json');
-  }
-
-  updateCrewInfo(crewInfoUpdateRequest): Observable<any> {
-    return this.httpClient.post(
-      environment.baseUrl + 'workforce/updatecrewinfo',
-      crewInfoUpdateRequest
-    );
-  }
-
-  /**
-   * Method to get Work management center details
-   */
-  getWorkManagementCenterDetails(): Observable<any> {
-    return this.httpClient.get(environment.baseUrl + 'workforce/getwmcdetails');
-  }
-
-  getScheduledCrews() {
-    return this.httpClient.get('assets/mockdata/routeSheetData.json');
-  }
-
-  saveOrdersForScheduling(ordersSelectedForScheduling) {
-    return this.httpClient.post(
-      environment.baseUrl + 'workload/saveordersforscheduling',
-      ordersSelectedForScheduling
-    );
-  }
-
-  validateUser(): Observable<any> {
-    return this.httpClient.get<User>(environment.baseUrl + 'Auth/validate', { withCredentials: true });
-  }
+    format(date: NgbDateStruct | null): string {
+        return date ? date.month + this.DELIMITER + 
+                        date.day + this.DELIMITER + 
+                        date.year 
+                    : '';
+    }
 }
