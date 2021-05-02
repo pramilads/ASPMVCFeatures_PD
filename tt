@@ -1,12 +1,29 @@
-import { Pipe, PipeTransform } from '@angular/core';
-@Pipe({
-    name: 'ddlFilter'
-})
-export class FilterByDropDownNamePipe implements PipeTransform {
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Subject } from 'rxjs';
 
-    transform(dropDownData : any, dropDownName: string): any[] {
-        if (dropDownData) {
-            return dropDownData.filter((ddl) => ddl.dropdownName === dropDownName);
-        }
+@Injectable({
+    providedIn: 'root',
+})
+export class FilterService {
+    private dataSource = new BehaviorSubject<any>({});
+    private resetCrewInformation = new BehaviorSubject<any>({});
+    private resetOrdersInformation = new BehaviorSubject<any>({});
+
+    data = this.dataSource.asObservable();
+    reset = this.resetCrewInformation.asObservable();
+    resetOrders = this.resetOrdersInformation.asObservable();
+
+      constructor() { }
+  
+    updatedDataSelection(data: any){
+      this.dataSource.next(data);
+    }
+
+    resetCrewDetails() {
+      this.resetCrewInformation.next(true);
+    }
+
+    resetOrderDetails() {
+      this.resetOrdersInformation.next(true);
     }
 }
