@@ -1,30 +1,231 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { CustomDateParserFormatter } from './../../core/services/datepicker.service';
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
+
+import { EmployeeSearchModel } from 'src/app/shared/models/search.model';
 import { SchedulerService } from 'src/app/core/services/scheduler.service';
-import { UpdatedHours } from './../../../shared/models/search.model';
+import { NgbCalendar, NgbDate } from '@ng-bootstrap/ng-bootstrap';
+import { FormControl } from '@angular/forms';
+import { FilterByDropDownNamePipe } from 'src/app/shared/pipes/ddlfilter.pipe';
+import { Subscription } from 'rxjs';
+import { FilterService } from 'src/app/shared/services/filter.service';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NgModule } from '@angular/core';
 
 @Component({
-  selector: 'map-crew-order',
-  templateUrl: './map-crew-order.component.html'
+  selector: 'app-workforce',
+  templateUrl: './workforce.component.html',
 })
-export class MapCrewOrderComponent {
-  @Input() public inputJobHours: any;
-  @Input() public inputCrewCapacity: any;
-  @Output() outputCapacity = new EventEmitter<any>();
+export class WorkforceComponent implements OnInit, OnDestroy {
+  @ViewChildren('matSelect') matSelect: QueryList<ElementRef>;
+  private subscription: Subscription;
 
-  constructor(public activeModal: NgbActiveModal, private schedulerService: SchedulerService){
+  formCtrlEmployeeType = new FormControl();
+  formCtrlHeadQuarter = new FormControl();
+
+  employeeSearchModel: EmployeeSearchModel;
+  dropDownData: any;
+  crewInfo: any;
+  displayEmployeeList = false;
+  headQuarters: any;
+  disableDateFrom;
+  disableDateTo;
+  userPreferences: any;
+  filterValues = {};
+  filterSelectObj = [];
+  filteredCrewInfo: any
+
+  constructor(
+    public schedulerService: SchedulerService,
+    private ngbCalendar: NgbCalendar,
+    private customDateParserFormatter: CustomDateParserFormatter,
+    private filterByDropDownNamePipe: FilterByDropDownNamePipe,
+    private filterService: FilterService,
+    private spinner: NgxSpinnerService
+  ) {
+    this.employeeSearchModel = new EmployeeSearchModel();
+    this.disableDateFrom = (date: NgbDate) => ngbCalendar.getWeekday(date) != 1;//enable only mondays
+    this.disableDateTo = (date: NgbDate) => ngbCalendar.getWeekday(date) != 7;//enable only sundays
+    this.filterSelectObj = [
+      {
+        name: 'Headquarter',
+        columnProp: 'headQuarter',
+        preSelected: [],
+        options: [],
+        formCtrl: this.formCtrlHeadQuarter
+      },
+      {
+        name: 'Employee Type',
+        columnProp: 'employeeType',
+        preSelected: [],
+        options: [],
+        formCtrl: this.formCtrlEmployeeType
+      },
+      {
+        name: 'Status',
+        columnProp: 'status',
+        preSelected: [],
+        options: [],
+        formCtrl: this.formCtrlHeadQuarter
+      },
+    ];
+
+    this.subscription = this.filterService.data.subscribe(data => {
+      if (data && this.schedulerService?.tabName == 'workforce') {
+        this.employeeSearchModel.DateFrom = data.DateFrom;
+        this.employeeSearchModel.DateTo = '4/11/2020';
+
+        this.employeeSearchModel.WorkPeriod = data.WorkPeriod;
+        this.employeeSearchModel.WmcId = this.parseHeadquarterAndWmcDetails(data.WmcId);
+        this.employeeSearchModel.HeadquarterId = this.parseHeadquarterAndWmcDetails(data.HeadquarterId);
+        this.getCrewInfo();
+      }
+    });
+
+
+    this.filterService.reset.subscribe(data => {
+      if (data) {
+        this.filteredCrewInfo = null;
+      }
+    });
   }
 
-  ngOnInit() {
-
+  parseHeadquarterAndWmcDetails(ids: string[]): string {
+    if (!ids || ids.length === 0) {
+      return '';
+    }
+    var output = ids[0];
+    for (var i = 1, len = ids.length; i < len; i++) {
+      output += ',' + ids[i];
+    }
+    return output;
   }
 
-  updateCapacity(){
-    let updatedHours: UpdatedHours = {
-      JobHours: this.inputJobHours, 
-      CrewCapacity: this.inputCrewCapacity
+  ngOnInit(): void {
+    this.validateUser();
+    this.setStartAndEndDate();
+    this.getDataForDropDowns();
   }
-    this.outputCapacity.emit(updatedHours);
-    this.activeModal.close('save');
-   }
+  
+  validateUser() {
+    this.schedulerService.validateUser();
+  }
+
+  setStartAndEndDate(): void {
+    // set the from and to dates to current week's monday and sunday respectively
+    const todayDate = this.ngbCalendar.getToday();
+    const weekdayNo = this.ngbCalendar.getWeekday(todayDate);
+    this.employeeSearchModel.DateFrom = this.customDateParserFormatter.format(
+      this.ngbCalendar.getPrev(todayDate, 'd', weekdayNo - 1)
+    );
+    this.employeeSearchModel.DateTo = this.customDateParserFormatter.format(
+      this.ngbCalendar.getNext(todayDate, 'd', 7 - weekdayNo)
+    );
+  }
+
+  getDataForDropDowns(): void {
+    this.schedulerService.getDropdownData('workforce').subscribe((res) => {
+      this.dropDownData = res.dropdownDetails;
+      this.userPreferences = res.userPreference;
+      if (res.userPreference) {
+        this.employeeSearchModel.WmcId = res.userPreference.wmcId;
+        this.populateHeadQuarters(res.userPreference.wmcId);
+        this.employeeSearchModel.HeadquarterId = res.userPreference.hqId;
+        this.employeeSearchModel.EnergyTypeId = res.userPreference.energyId;
+      }
+    });
+  }
+
+  /**
+   * Method to get all crew information
+   * returns void
+   */
+  getCrewInfo(): void {
+    this.displayEmployeeList = false;
+    this.schedulerService
+      .getCrewInfo(this.employeeSearchModel)
+      .subscribe((res) => {
+        if(res.crewInfo){
+          const headQuarters = [...new Set(res.crewInfo?.map(item => item.headquarter))];
+          const employeeTypes = [...new Set(res.crewInfo?.map(item => item.employeeType))];
+          const statuses = [...new Set(res.crewInfo?.map(item => item.status))];
+  
+          if (this.filterSelectObj && this.filterSelectObj.length > 0) {
+            this.filterSelectObj[0].options = [];
+            this.filterSelectObj[1].options = [];
+            this.filterSelectObj[2].options = [];
+            headQuarters.forEach(headQuarter => {
+              this.filterSelectObj[0].options.push({ id: headQuarter, name: headQuarter });
+            });
+            employeeTypes.forEach(type => {
+              this.filterSelectObj[1].options.push({ id: type, name: type });
+            });
+            statuses.forEach(status => {
+              this.filterSelectObj[2].options.push({ id: status, name: status });
+            });
+          }
+        }
+        this.crewInfo = res.crewInfo;
+        this.filteredCrewInfo = this.crewInfo;
+        this.displayEmployeeList = true;
+        this.spinner.hide();
+      });
+  }
+
+  reloadEmployee(): void {
+    alert('refresh employee list');
+    this.getCrewInfo();
+  }
+
+  ngOnDestroy(): void {
+    this.resetSearchData();
+    this.subscription.unsubscribe();
+  }
+
+  // Reset table filters
+  resetFilters() {
+    //this.filterSelectObj.forEach((filter) => {
+    // filter.formCtrl.setValue('');
+    // this.filterChange(filter.columnProp, filter.formCtrl.value);
+    // });
+    // this.dataSource.filter = "";
+  }
+
+  resetSearchData(): void {
+    this.filterSelectObj[0].preSelected = [];
+    this.filterSelectObj[1].preSelected = [];
+    this.filterSelectObj[2].preSelected = [];
+    this.filterChange('headQuarter', null);
+    this.filterChange('status', null);
+    this.filterChange('employeeType', null);
+    // this.setStartAndEndDate();
+  }
+
+
+  ok(index, filter) {
+    this.filterChange(filter.columnProp, filter.formCtrl.value);
+    this.matSelect['_results'][index].close();
+  }
+
+  cancel(index, filter) {
+    filter.formCtrl.setValue('');
+    this.filterChange(filter.columnProp, filter.formCtrl.value);
+    this.matSelect['_results'][index].close();
+  }
+
+  // Called on Filter change and ok/cancel is clicked
+  filterChange(col, val) {
+    this.filterValues[col] = val;
+    this.filteredCrewInfo = this.crewInfo;
+    this.filteredCrewInfo = this.filterValues["employeeType"] && this.filterValues["employeeType"].length ? this.filteredCrewInfo.filter((item) => this.filterValues["employeeType"].indexOf(item.employeeType) > -1) : this.filteredCrewInfo;
+    this.filteredCrewInfo = this.filterValues["status"] && this.filterValues["status"].length ? this.filteredCrewInfo.filter((item) => this.filterValues["status"].indexOf(item.status) > -1) : this.filteredCrewInfo;
+    this.filteredCrewInfo = this.filterValues["headQuarter"] && this.filterValues["headQuarter"].length ? this.filteredCrewInfo.filter((item) => this.filterValues["headQuarter"].indexOf(item.headquarter) > -1) : this.filteredCrewInfo;
+  }
+
+  /**
+   * Populated HeadQuarters on WMC selection
+   */
+  populateHeadQuarters(wmcId: any) {
+    this.filterSelectObj[0].options = this.dropDownData.filter(headquarter => headquarter.dropdownName === 'Headquarter' && headquarter.wmcId == wmcId);
+  }
 }
