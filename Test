@@ -1,34 +1,30 @@
-<div class="modal-header">
-    <h4 class="modal-title">
-      Adjust Hours
-    </h4>
-    <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('close')" ngAutoFocus="false">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-body">
-    <div class="col-12">
-      <div class="row">
-              <div class="form-group row">
-                  <label class="col-md-7 text-md-right">Job Hours: </label>
-                  <input class="col-md-3 form-control ml-2" type="text" [(ngModel)]="inputJobHours"/>
-              </div>
-        </div>
-        <div class="row">
-              <div class="form-group row">
-                  <label class="col-md-7 text-md-right">Crew Capacity: </label>
-                  <input class="col-md-3 form-control" type="text" [(ngModel)]="inputCrewCapacity"/>
-              </div>  
-      </div>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <div class="container">
-      <div class="row">
-        <div class="col text-center">
-          <button type="button" class="btn btn-primary btn-sm mr-2" (click)="updateCapacity()">Save</button>
-          <button type="button" class="btn btn-primary btn-sm" (click)="activeModal.close('cancel')">Cancel</button>
-        </div>
-      </div>
-    </div>
-  </div>
+import { Component, Input, EventEmitter, Output } from '@angular/core';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { SchedulerService } from 'src/app/core/services/scheduler.service';
+import { UpdatedHours } from './../../../shared/models/search.model';
+
+@Component({
+  selector: 'map-crew-order',
+  templateUrl: './map-crew-order.component.html'
+})
+export class MapCrewOrderComponent {
+  @Input() public inputJobHours: any;
+  @Input() public inputCrewCapacity: any;
+  @Output() outputCapacity = new EventEmitter<any>();
+
+  constructor(public activeModal: NgbActiveModal, private schedulerService: SchedulerService){
+  }
+
+  ngOnInit() {
+
+  }
+
+  updateCapacity(){
+    let updatedHours: UpdatedHours = {
+      JobHours: this.inputJobHours, 
+      CrewCapacity: this.inputCrewCapacity
+  }
+    this.outputCapacity.emit(updatedHours);
+    this.activeModal.close('save');
+   }
+}
