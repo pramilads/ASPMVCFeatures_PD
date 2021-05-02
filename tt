@@ -1,23 +1,72 @@
-import { SchedulerService } from 'src/app/core/services/scheduler.service';
-import { Component } from '@angular/core';
+<div class="modal-header">
+    <h4 class="modal-title">
+      Edit Order: <span class="small">{{inputOrderInfo.orderKey}}</span>
+    </h4>
+    <button type="button" class="close" aria-label="Close" (click)="activeModal.close('close')" ngAutoFocus="false">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="col-12 pt-3">
+      <div class="row">
+        <div class="col-md-5">
+          <div class="form-group row">
+              <label class="col-md-5 col-form-label text-md-right">No of hours: </label>
+              <div class="col-md-7 pt-2">
+                  <input type="text" class="form-control" [(ngModel)]="inputOrderInfo.noOfHours"/>
+              </div>
+          </div>
+        </div>
 
-@Component({
-  selector: 'crew-composition',
-  templateUrl: './crew-composition.component.html'
-})
-export class CrewCompositionComponent {
-  lstCrew: any = [];
-  displayCrewComposition: boolean = false;
+        <div class="col-md-7">
+            <div class="form-group row">
+                <label class="col-md-4 col-form-label text-md-right">Schedule Start Date: </label>
+                <div class="col-sm-5">
+                  <div class="input-group">
+                    <input class="form-control" placeholder="mm/dd/yyyy" readonly 
+                    (click)="toDate.toggle()"
+                           [(ngModel)]="inputOrderInfo.scheduleStartDate" ngbDatepicker 
+                           #toDate="ngbDatepicker">
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary" (click)="toDate.toggle()" 
+                      type="button">
+                        <i class="fa fa-calendar"></i>
+                      </button>
+                    </div>
+                  </div>  
+                </div>
+            </div>
+        </div>
+      </div>
 
-  constructor(private schedulerService: SchedulerService){
-    
-  }
+      <div class="row">
+        <div class="col-md-5">
+          <div class="form-group row">
+              <label class="col-md-5 col-form-label text-md-right">Unloading point: </label>
+              <div class="col-md-7 pt-2">
+                  <input type="text" class="form-control" [(ngModel)]="inputOrderInfo.unloadingPoint"/>
+              </div>
+          </div>
+        </div>
 
-  ngOnInit() {
-    this.schedulerService.formCrewSubject.subscribe(() => {
-      this.displayCrewComposition = true;
-      this.lstCrew.push(this.schedulerService.selectedCrewMembers);
-      this.schedulerService.selectedCrewMembers = [];
-    });
-  }
-}
+        <div class="col-md-7">
+            <div class="form-group row">
+                <label class="col-md-4 col-form-label text-md-right">Comments: </label>
+                <div class="col-sm-5">
+                  <textarea class="form-control" rows="4" [(ngModel)]="inputOrderInfo.comments"></textarea>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <div class="container">
+      <div class="row">
+        <div class="col text-center">
+          <button type="button" class="btn btn-primary btn-sm mr-2" (click)="updateOrderDetails()">Save</button>
+          <button type="button" class="btn btn-primary btn-sm" (click)="activeModal.close('close')">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
