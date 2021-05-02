@@ -1,31 +1,46 @@
-<div aria-labelledby="tab-workforce" id="tab-workforce-content" class="tab-pane fade active show" role="tabpanel"
-    [hidden]="!schedulerService.expandSearch">
-
+<div class="modal-header">
+  <h4 class="modal-title">
+    Edit Employee: <span class="small">{{inputEmployeeInfo.name}}</span>
+  </h4>
+  <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('close')" ngAutoFocus="false">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <div class="col-12 pt-3">
     <div class="row">
-        <div class="col-12 pt-3">
-            <div>
-                <label class="col-form-label">Filter Records: </label>
-                <mat-form-field *ngFor="let filter of filterSelectObj; let i = index" style="margin-left: 
-    15px;width: 100px;">
-                    <mat-label>{{filter.name}}</mat-label>
-                    <mat-select #matSelect multiple [formControl]="filter.formCtrl" [(ngModel)]="filter.preSelected">
-                        <mat-option *ngFor="let item of filter.options" [value]="item.id">{{item.name}}</mat-option>
-                        <button class="btn btn-primary btn-sm m-2" (click)="ok(i, filter)">Ok</button>
-                        <button class="btn btn-primary btn-sm" (click)="cancel(i, filter)">Cancel</button>
-                    </mat-select>
-                </mat-form-field>
-                &nbsp;
-                <div style="display:inline-block">
-                    <button type="reset" class="btn btn-primary btn-sm" (click)="resetSearchData()">Reset</button>
+        <div class="col-md-5">
+            <div class="form-group row">
+                <label class="col-md-5 col-form-label text-md-right">Active: </label>
+                <div class="col-md-7 pt-2">
+                    <input type="checkbox" [checked]="isActive" [(ngModel)]="isActive"/>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="row mt-3">
-        <div class="col-12">
-            <app-crew-info *ngIf="displayEmployeeList" [crewList]="filteredCrewInfo"
-                (outputEmployeeList)="reloadEmployee()">
-            </app-crew-info>
+        <div class="col-md-7">
+            <div class="form-group row">
+                <label class="col-md-4 col-form-label text-md-right">Employee Type: </label>
+                <div class="col-sm-5">
+                    <select class="form-control" [(ngModel)]="inputEmployeeInfo.employeeTypeId">
+                        <option *ngFor="let data of dropDownData | ddlFilter : 'CrewType'" [value]="data.id"> 
+                          {{data.name}}
+                        </option>
+                    </select>
+                </div>
+            </div>
         </div>
+
     </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col text-center">
+        <button type="button" class="btn btn-primary btn-sm mr-2" (click)="updateCrewInfo()">Save</button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="activeModal.close('close')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
