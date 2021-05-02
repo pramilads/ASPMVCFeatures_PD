@@ -1,31 +1,90 @@
-import { Component } from '@angular/core';
-import { SchedulerService } from 'src/app/core/services/scheduler.service';
-import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { LoadingModalComponent } from './shared/components/loading-modal/loading-modal.component';
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { FormsModule,ReactiveFormsModule } from '@angular/forms'; // to use ngModel
+import { HttpClientModule } from '@angular/common/http';
+import { NgbActiveModal, NgbModule, NgbDateAdapter, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { MatTableModule } from '@angular/material/table';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSortModule } from '@angular/material/sort';
+import { Routes } from './app-routing.module';
 
-@Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+import { NgxSpinnerModule } from 'ngx-spinner';
+// components
+import { AppComponent } from './app.component';
+import { MasterComponent } from './components/master/master.component';
+import { WorkforceComponent } from './components/workforce/workforce.component';
+import { WorkloadComponent } from './components/workload/workload.component';
+import { SchedulerComponent } from './components/scheduler/scheulder.component';
+import { RouteSheetComponent } from './components/route-sheet/route-sheet.component';
+import { CrewInfoComponent } from './components/workforce/crew-info/crew-info.component';
+import { OrderListComponent } from './components/workload/order-list/order-list.component';
+import { CrewCompositionComponent } from './components/workforce/crew-composition/crew-composition.component';
+//popups
+import { EmployeeEditComponent } from './components/workforce/employee-edit/employee-edit.component';
+import { OrderEditComponent } from './components/workload/order-edit/order-edit.component';
+import { MapCrewOrderComponent } from './components/scheduler/map-crew-orders/map-crew-order.component';
+
+// services
+import { CustomDateAdapter, CustomDateParserFormatter } from './core/services/datepicker.service';
+
+// pipes
+import { FilterByDropDownNamePipe } from './shared/pipes/ddlfilter.pipe';
+import { NgbdSortableHeader } from './shared/directives/sort.directive';
+import {LocalBusyDirective}  from './shared/directives/local-busy.directive';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    MasterComponent,
+    WorkforceComponent,
+    WorkloadComponent,
+    SchedulerComponent,
+    RouteSheetComponent,
+    CrewInfoComponent,
+    EmployeeEditComponent,
+    OrderListComponent,
+    OrderEditComponent,
+    MapCrewOrderComponent,
+    LoadingModalComponent,
+    CrewCompositionComponent,
+
+    // pipes
+    FilterByDropDownNamePipe,
+
+    // directives
+    NgbdSortableHeader,
+    LocalBusyDirective
+  ],
+  imports: [
+    BrowserModule,
+    RouterModule,
+    RouterModule.forRoot(Routes),
+    BrowserAnimationsModule,
+    FormsModule,ReactiveFormsModule,
+    HttpClientModule,
+    NgbModule,
+    DragDropModule,
+    MatTableModule, MatInputModule, MatFormFieldModule, MatSelectModule, MatSortModule, NgxSpinnerModule
+  ],
+  exports: [
+     LocalBusyDirective, MatSortModule
+   ],
+  entryComponents: [
+    EmployeeEditComponent
+  ],
+  providers: [
+    NgbActiveModal,
+    {provide: NgbDateAdapter, useClass: CustomDateAdapter},
+    {provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter},
+    FilterByDropDownNamePipe
+  ],
+  bootstrap: [AppComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class AppComponent {
-  title = 'SchedularUI';
-  username = '';
-  constructor(private schedulerService: SchedulerService, private modalService: NgbModal){
-  }
-
-  ngOnInit() {
-    this.schedulerService.validateUser().subscribe(res => {
-      this.username = res.name;
-    });
-
-    this.schedulerService.showLoadingIndicator.subscribe((showIndicator) => {
-      if (showIndicator){
-        const modalOptions:  NgbModalOptions = {
-          size: 'sm',
-          keyboard: false,
-          backdrop: 'static'
-        };
-      }
-    });
-  }
-}
+export class AppModule { }
