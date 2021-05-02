@@ -1,0 +1,142 @@
+<div class="content">
+    <ngx-spinner bdColor="rgba(51,51,77,0.8)" size="medium" color="#fffvv" type="ball-scale-multiple">
+        <p style="font-size: 20px; color: rgb(255, 255, 255)">Loading...</p>
+    </ngx-spinner>
+    <div class="container mt-3 mb-3">
+        <div class="col-12 pt-3">
+            <form #GlobalFiltersForm="ngForm" (submit)="GlobalFiltersForm.form.valid && search()" novalidate>
+                <div class="row">
+                    <div class="col-12 col-md-2">
+                        <div class="form-group pl-0">
+                            <label class="col-form-label">Week Of: </label>
+                            <div>
+                                <div class="input-group">
+                                    <input class="form-control" placeholder="mm/dd/yyyy" readonly name="fromDateVal"
+                                        required #fromDateVal="ngModel" (click)="fromDate.toggle()"
+                                        [(ngModel)]="employeeSearchModel.DateFrom" ngbDatepicker
+                                        #fromDate="ngbDatepicker" [markDisabled]="disableDateFrom">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" (click)="fromDate.toggle()"
+                                            type="button">
+                                            <i class="fa fa-calendar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-danger" *ngIf="( GlobalFiltersForm.submitted && fromDateVal.errors?.required)">
+                            Field is required *
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <div class="form-group pl-0">
+                            <label class="col-form-label">Work Period: </label>
+                            <div>
+                                <select class="form-control" [(ngModel)]="employeeSearchModel.WorkPeriod"
+                                    name="WorkPeriodVal" required #WorkPeriodVal="ngModel"
+                                    (change)="onChange('WorkPeriod',$event.target.value)">
+                                    <option *ngFor="let data of workPeriod" [value]="data.id">
+                                        {{data.name}}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-danger"
+                            *ngIf="( GlobalFiltersForm.submitted && WorkPeriodVal.errors?.required)">
+                            Field is required *
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-2" *ngFor="let filter of filterSelectObj; let i = index">
+                        <div class="form-group pl-0">
+                            <label class="col-form-label">{{filter.name}}: </label>
+                            <div>
+                                <mat-form-field style="width: 100%;">
+                                    <mat-label>{{filter.name}}</mat-label>
+                                    <mat-select #matSelect multiple [formControl]="filter.formCtrl"
+                                        [(ngModel)]="filter.preSelected" required
+                                        (selectionChange)="populateHeadQuarters($event.value, $event.source.id)">
+                                        <mat-option *ngFor="let item of filter.options" [value]="item.id">{{item.name}}
+                                        </mat-option>
+                                        <button class="btn btn-primary btn-sm m-2" (click)="ok(i, filter)">Ok</button>
+                                        <button class="btn btn-primary btn-sm"
+                                            (click)="cancel(i, filter)">Cancel</button>
+                                    </mat-select>
+                                </mat-form-field>
+                                <div class="text-danger"
+                                    *ngIf="( GlobalFiltersForm.submitted && filter.formCtrl.errors?.required)">
+                                   Field is required *
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <div class="form-group pl-0">
+                            <label class="col-form-label">Energy: </label>
+                            <div>
+                                <select class="form-control" [(ngModel)]="employeeSearchModel.EnergyTypeId"
+                                    name="EnergyTypeIdVal" required #EnergyTypeIdVal="ngModel"
+                                    (change)="onChange('EnergyTypeId',$event.target.value)">
+                                    <option *ngFor="let data of dropDownData | ddlFilter : 'EnergyType'"
+                                        [value]="data.id">
+                                        {{data.name}}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-danger"
+                            *ngIf="( GlobalFiltersForm.submitted && EnergyTypeIdVal.errors?.required)">
+                            Field is required *
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-2 pt-5">
+                        <div class="form-group">
+                            <div class="col text-center">
+                                <button type="submit" class="btn btn-primary btn-sm mr-2">Search</button>
+                                <button type="reset" class="btn btn-primary btn-sm"
+                                    (click)="resetSearchData(GlobalFiltersForm)">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="row">
+            <div class="col-12 pt-3">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" data-target="#tab-workforce-content"
+                            (click)="redirectToTab('workforce')" id="tab-workforce" aria-expanded="true"
+                            aria-selected="true" aria-controls="tab-workforce">
+                            Workforce</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" data-target="#tabContent"
+                            (click)="redirectToTab('workload')">Workload</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" data-target="#tabContent"
+                            (click)="redirectToTab('scheduler')">Scheduler</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" data-target="#tabContent"
+                            (click)="redirectToTab('routeSheet')">Route Sheet</a>
+                    </li>
+
+                    <li class="nav-item ml-auto">
+                        <button type="button" class="btn btn-primary ml-2" (click)="expandCollapseSearch()"
+                            [title]="caretTitle"><i [ngClass]="caretStyle"></i></button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-12 pt-3">
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <router-outlet></router-outlet>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
