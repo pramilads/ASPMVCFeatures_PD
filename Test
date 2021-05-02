@@ -1,44 +1,84 @@
-import { Component, Input } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { SchedulerService } from 'src/app/core/services/scheduler.service';
-import { CrewUpdateModel } from './../../../shared/models/search.model';
+<div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm">
+            <tr>
+                <th rowspan="2">Crew<br/>Selection</th>
+                 <th rowspan="2" style="vertical-align: middle;" 
+                sortable="name" (sort)="onSort($event)">Headquarter</th>
+                <th rowspan="2" style="vertical-align: middle;" 
+                    sortable="name" (sort)="onSort($event)">Employee Name</th>
+                <th rowspan="2" style="vertical-align: middle;" 
+                    sortable="employeeType" (sort)="onSort($event)">Employee Type</th>
+                <th rowspan="2" style="vertical-align: middle;" 
+                    sortable="status" (sort)="onSort($event)">Status</th>
+                <th colspan="7" style="text-align: center;">Capacity (Shift hours)</th>
+            </tr>
+            <tr>
+                <th>Mon</th>
+                <th>Tues</th>
+                <th>Wed</th>
+                <th>Thur</th>
+                <th>Fri</th>
+                <th>Sat</th>
+                <th>Sun</th>
+            </tr>
+            <tr [ngClass]="{'disabled': emp.status === 'Inactive'}" 
+            *ngFor="let emp of sortedEmployeeList | slice: (currentPage-1) * recordsPerPage : (currentPage-1) * recordsPerPage + recordsPerPage">
+                <td>
+                    <input type="checkbox" (click)="setSelectedCrewMembers($event, emp)" [checked]="emp.isSelected" />
+                </td>
+                <td>{{ emp.headquarter }}</td>
+                <td>
+                    {{ emp.name }}
+                    <span class="ml-2" (click)="editEmployee(emp.id)">
+                        <i class="fa fa-edit" title="Edit employee"></i>
+                    </span>
+                </td>
+                <td>{{ emp.employeeType }}</td>
+                <td>{{ emp.status }}</td>
+                <td>{{ emp.mon }}</td>
+                <td>{{ emp.tues }}</td>
+                <td>{{ emp.wed }}</td>
+                <td>{{ emp.thur }}</td>
+                <td>{{ emp.fri }}</td>
+                <td>{{ emp.sat }}</td>
+                <td>{{ emp.sun }}</td>
+            </tr>
+        </table>
+    </div>
 
-@Component({
-  selector: 'employee-edit',
-  templateUrl: './employee-edit.component.html'
-})
-export class EmployeeEditComponent {
-  @Input() public inputEmployeeInfo: any;
-  dropDownData : any;
-  isActive: boolean;
-  crewUpdateModel: CrewUpdateModel;
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group row">
+                <label class="ml-3 col-form-label text-md-left">Page Size: </label>
+                <div class="col-md-1">
+                    <select class="form-control" (change)="setPageSize($event)">
+                        <option></option>
+                        <option>10</option>
+                        <option>20</option>
+                        <option>30</option>
+                        <option>40</option>
+                        <option>50</option>
+                    </select>
+                </div>
+                <div class="col-sm-3">
+                    <ngb-pagination class="pagination" [collectionSize]="crewList?.length" [(page)]="currentPage" [pageSize]="recordsPerPage" [maxSize]="maxPageToDisplay"></ngb-pagination>
+                </div>
+            </div>
+        </div>
+    </div> 
+    
+    <div class="row">
+        <div class="col-md-12 center">
+            <button class="btn btn-primary btn-sm" (click)="formCrew()" [disabled]="formCrewDisabled">Form Crew</button>
+        </div>
+    </div>
 
-  constructor(public activeModal: NgbActiveModal, private schedulerService: SchedulerService){
-  }
-
-  ngOnInit() {
-    this.getDataForDropDowns();
-    this.isActive = this.inputEmployeeInfo.status == 'Active' ? true : false;
-  }
-
-  getDataForDropDowns(){
-    this.schedulerService.getCrewType().subscribe(
-      (res) => {
-        this.dropDownData = res.dropdownDetails;
-      }
-    );
-  }
-
-  updateCrewInfo(){
-    this.crewUpdateModel = new CrewUpdateModel();
-    this.crewUpdateModel.Active = this.isActive ? 1 : 0;
-    this.crewUpdateModel.EmployeeClassficationId = this.inputEmployeeInfo.employeeTypeId;
-    this.crewUpdateModel.Id = this.inputEmployeeInfo.id;
-    this.schedulerService.updateCrewInfo(this.crewUpdateModel).subscribe(
-      (res) => {
-        console.log(res);
-        this.activeModal.close('save');
-      }
-    )
-  }
-}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div>
+                <crew-composition></crew-composition>
+            </div>
+        </div>
+    </div>
+</div>
