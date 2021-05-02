@@ -1,0 +1,63 @@
+<div class="container">
+    <div class="row">
+        <div class="col text-md-right">
+            <button class="btn btn-primary btn-sm" (click)="print()">Print</button>
+        </div>
+    </div>
+    <div class="row mt-3" id="schedule" >
+        <div class="col">
+            <table class="scheduler table table-bordered table-sm">
+                <thead>
+                    <tr>
+                        <th>Crew</th>
+                        <th>Mon</th>
+                        <th>Tues</th>
+                        <th>Wed</th>
+                        <th>Thur</th>
+                        <th>Fri</th>
+                        <th>Sat</th>
+                        <th>Sun</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let crew of lstCrew"
+                        cdkDropList>
+                        <td style="background-color: #e9ecef;">
+                            Crew Id: {{crew.CrewId}}
+                            <br/>
+                            <br/>
+                            Crew Type: {{crew.CrewType}}
+                            <br/>
+                            <br/>
+                            Truck: {{crew.Truck}}
+                            <br/>
+                            <br/>
+                            Comments: {{crew.Comments}}
+                        </td>
+                        <td>
+                            <p *ngFor="let order of crew.Monday.OrdersList" [ngClass]="getStyle(order)">{{order.orderKey}}-{{order.orderDesc}}</p>
+                        </td>
+                        <td>
+                            <p *ngFor="let order of crew.Tuesday.OrdersList" [ngClass]="getStyle(order)">{{order.orderKey}}-{{order.orderDesc}}</p>
+                        </td>
+                        <td>
+                            <p *ngFor="let order of crew.Wednesday.OrdersList" [ngClass]="getStyle(order)">{{order.orderKey}}-{{order.orderDesc}}</p>
+                        </td>
+                        <td>
+                            <p *ngFor="let order of crew.Thursday.OrdersList" [ngClass]="getStyle(order)">{{order.orderKey}}-{{order.orderDesc}}</p>
+                        </td>
+                        <td>
+                            <p *ngFor="let order of crew.Friday.OrdersList" [ngClass]="getStyle(order)">{{order.orderKey}}-{{order.orderDesc}}</p>
+                        </td>
+                        <td>
+                            <p *ngFor="let order of crew.Saturday.OrdersList" [ngClass]="getStyle(order)">{{order.orderKey}}-{{order.orderDesc}}</p>
+                        </td>
+                        <td>
+                            <p *ngFor="let order of crew.Sunday.OrdersList" [ngClass]="getStyle(order)">{{order.orderKey}}-{{order.orderDesc}}</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
