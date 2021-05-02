@@ -1,204 +1,229 @@
-import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
-import { Router } from '@angular/router';
-import { SchedulerService } from 'src/app/core/services/scheduler.service';
-import { EmployeeSearchModel } from 'src/app/shared/models/search.model';
-import { OrderSearchModel } from 'src/app/shared/models/search.model';
-import { NgbCalendar, NgbDate } from '@ng-bootstrap/ng-bootstrap';
-import { FilterByDropDownNamePipe } from 'src/app/shared/pipes/ddlfilter.pipe';
-import { FilterService } from 'src/app/shared/services/filter.service';
-import { Observable, Subject } from 'rxjs';
+import { Component } from '@angular/core';
 import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { OrderListComponent } from 'src/app/components/workload/order-list/order-list.component';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
 
-type typeCaretTitle = 'Collapse Search' | 'Expand Search';
-type typeCaretStyle = 'fa fa-caret-down' | 'fa fa-caret-left';
+import { OrderCrewSearchModel, UpdatedHours } from './../../shared/models/search.model';
+import { SchedulerService } from './../../core/services/scheduler.service';
+import { MapCrewOrderComponent } from './map-crew-orders/map-crew-order.component';
 
 @Component({
-  selector: 'master',
-  templateUrl: './master.component.html'
+  selector: 'scheduler',
+  templateUrl: './scheduler.component.html'
 })
-export class MasterComponent {
-  @ViewChildren('matSelect') matSelect: QueryList<ElementRef>;
+export class SchedulerComponent {
+    displayCrewOrderInfo: boolean = false;
+    allOrders: any = [];
+    lstOrder: any = [];
+    lstCrew: any = [];
+    orderStyle: any;
+    orderCrewSearchModel: OrderCrewSearchModel;
+    orderAndCrewInfo: any;
+    dropDownData : any;
+    updatedHours: UpdatedHours;
 
-  private orderList: OrderListComponent;
-
-  formCtrlWMC = new FormControl();
-  formCtrlHeadQuarter = new FormControl();
-
-  employeeSearchModel: EmployeeSearchModel;
-  orderSearchModel: OrderSearchModel;
-
-  employeeList: any;
-  headQuarters: any;
-  dropDownData: any;
-  workPeriod: any;
-  caretStyle: typeCaretStyle = 'fa fa-caret-down';
-  caretTitle: typeCaretTitle = 'Collapse Search';
-  disableDateFrom;
-  filterValues = {};
-  filterSelectObj = [];
-  selectedTab: string;
-  storage: Storage;
-
-
-  constructor(private router: Router, private schedulerService: SchedulerService,
-    private filterByDropDownNamePipe: FilterByDropDownNamePipe,
-    private filterService: FilterService,
-    private ngbCalendar: NgbCalendar,
-    private spinner: NgxSpinnerService) {
-    this.storage = window.localStorage;
-    this.employeeSearchModel = new EmployeeSearchModel();
-    this.disableDateFrom = (date: NgbDate) => ngbCalendar.getWeekday(date) != 1;//enable only mondays
-    this.workPeriod = [{ id: "Week", name: "Week" }, { id: "WeekEnd", name: "WeekEnd" }, { id: "Both", name: "Both" }];
-    // Object to create Filter for
-    this.filterSelectObj = [
-      {
-        name: 'WMC',
-        columnProp: 'WmcId',
-        preSelected: [],
-        options: [],
-        formCtrl: this.formCtrlWMC
-      },
-      {
-        name: 'Headquarters',
-        columnProp: 'HeadquarterId',
-        preSelected: [],
-        options: [],
-        formCtrl: this.formCtrlHeadQuarter
-      },
-    ]
-  }
-
-  ngOnInit() {
-    this.redirectToTab('workforce');
-    this.getDataForDropDowns();
-  }
-
-  getDataForDropDowns(): void {
-    this.schedulerService.getDropdownData('workforce').subscribe((res) => {
-      this.filterSelectObj[0].options = this.filterByDropDownNamePipe.transform(res.dropdownDetails, 'WMC');
-      this.dropDownData = res.dropdownDetails;
-      //this.userPreferences = res.userPreference;
-      this.setDefaultFilterValue();
-      if (res.userPreference) {
-        this.employeeSearchModel.WmcId = res.userPreference.wmcId;
-        this.populateHeadQuarters(res.userPreference.wmcId, '');
-        this.employeeSearchModel.HeadquarterId = res.userPreference.hqId;
-        //this.employeeSearchModel.WorkPeriod = res.userPreference.workPeriod;
-        // this.employeeSearchModel.EnergyTypeId = res.userPreference.EnergyTypeId;
-      }
-    });
-  }
-
-  setDefaultFilterValue() {
-    this.filterValues = JSON.parse(this.storage.getItem(this.selectedTab));
-       if (this.filterValues) {
-      this.employeeSearchModel.DateFrom = this.filterValues["DateFrom"];
-      this.employeeSearchModel.WorkPeriod = this.filterValues["WorkPeriod"];
-      this.employeeSearchModel.EnergyTypeId = this.filterValues["EnergyTypeId"];
-      this.filterSelectObj[0].preSelected = this.filterValues["WmcId"];
-      this.populateHeadQuarters(this.filterSelectObj[0].preSelected, 'mat-select-0')
-      this.filterSelectObj[1].preSelected = this.filterValues["HeadquarterId"];
-    }
-    else {
-      this.resetSearchData("GlobalFiltersForm");
-    }
-  }
-
-  redirectToTab(tabName) {
-    this.reset();
-    this.selectedTab = tabName;
-    this.schedulerService.tabName = tabName;
-    this.router.navigate(['/landing/' + tabName]);
-  }
-
-  expandCollapseSearch() {
-    this.schedulerService.expandSearch = !this.schedulerService.expandSearch;
-    this.caretStyle = this.schedulerService.expandSearch ? 'fa fa-caret-down' : 'fa fa-caret-left';
-    this.caretTitle = this.schedulerService.expandSearch ? 'Collapse Search' : 'Expand Search';
-  }
-
-  resetSearchData(frm): void {
-    frm.submitted = false;
-
-    Object.keys(this.employeeSearchModel).forEach(
-      (key) => (this.employeeSearchModel[key] = '')
-    );
-
-    // // On reset clear localstorage values    
-    this.storage.setItem(this.selectedTab, null);
-    this.filterService.resetCrewDetails();
-    this.filterService.resetOrderDetails();
-
-
-    this.filterSelectObj[0].preSelected = [];
-    this.filterSelectObj[1].preSelected = [];
-    this.filterSelectObj[2].preSelected = [];
-  }
-
-  // Called on Filter change and ok/cancel is clicked
-  filterChange(col, val) {
-    if (!this.filterValues) {
-      this.filterValues = {};
+    constructor(public schedulerService: SchedulerService, private modalService: NgbModal){
+      
     }
 
-    this.filterValues[col] = val;
-    // this.dataSource.filter = JSON.stringify(this.filterValues);
-  }
+    ngOnInit(){
+      this.orderCrewSearchModel = new OrderCrewSearchModel();
+      this.getDataForDropDowns();
+    }
 
-  cancel(index, filter) {
-    filter.formCtrl.setValue('');
-    this.filterChange(filter.columnProp, filter.formCtrl.value);
-    this.matSelect['_results'][index].close();
-  }
-
-  ok(index, filter) {
-    this.filterChange(filter.columnProp, filter.formCtrl.value);
-    this.matSelect['_results'][index].close();
-  }
-
-  reset() {
-    this.schedulerService.expandSearch = true;
-    this.caretStyle = 'fa fa-caret-down';
-    this.caretTitle = 'Expand Search';
-  }
-
-  onChange(col: string, value: any): void {
-    this.filterChange(col, value);
-  }
-
-  /**
-  * Populated HeadQuarters on WMC selection
-  */
-  populateHeadQuarters(wmcIds: string[], elementId: any) {
-    if (elementId && elementId === 'mat-select-0') {
-      this.filterSelectObj[1].options = [];
-      for (var i = 0, len = wmcIds.length; i < len; i++) {
-        var hqIds = this.dropDownData.filter(headquarter => headquarter.dropdownName === 'Headquarter' && headquarter.wmcId == wmcIds[i]);
-        for (var j = 0, l = hqIds.length; j < l; j++) {
-          this.filterSelectObj[1].options.push(hqIds[j]);
+    getDataForDropDowns() {
+      this.schedulerService.getDropdownData('scheduler').subscribe(
+        (res) => {
+          this.dropDownData = res.wfDropdownDetails;
         }
+      );
+    }
+
+    searchOrdersAndCrews(){
+      this.getOrderData();
+      this.getCrewData();
+    }
+
+    getOrderData() {
+      this.schedulerService.getOrdersForScheduling(this.orderCrewSearchModel).subscribe(
+        (res) => {
+          this.lstOrder = res.orderDetails;
+          //get only those orders selected in Workload tab
+          this.lstOrder = this.lstOrder.filter(
+            order => order.isSelected == 'Y'
+          );
+          this.lstOrder.forEach((order) => {
+            let colSpan = (parseInt(order['noOfHours']) < 4 || order['noOfHours'] == null) ? 4 : parseInt(order['noOfHours']) > 13 ? 13 : parseInt(order['noOfHours']);
+            order['OrderStyle'] = {
+              'background-color': (order.orderCategory == 'Compliance' || order.custComm == 'Y') ? '#f38989' : 
+                                    order.orderCategory == 'COTD' ? '#ABFFA3' : null,
+              'color': (order.orderCategory == 'Compliance' || order.custComm == 'Y') ? 'white' : 'black',
+              'border': '1px solid black',
+              'grid-column': '1 / span ' + colSpan
+            }
+          });
+          this.allOrders = JSON.parse(JSON.stringify(this.lstOrder));// [...this.lstOrder];
+        });
+    }
+
+    getCrewData() {
+      this.schedulerService.getCrewsForScheduling(this.orderCrewSearchModel).subscribe(
+        (res) => {
+          this.lstCrew = res;
+          this.displayCrewOrderInfo = true;
+        });
+    }
+
+    resetSearchData(){
+      Object.keys(this.orderCrewSearchModel).forEach(
+        (key) => this.orderCrewSearchModel[key] = ''
+      );
+    }
+
+    onMouseEnter(crewId, day){
+      this.schedulerService.mapToCrew = {
+        crewId,
+        day
       }
     }
-  }
 
-  /**
-  * Method to set all filter data information
-  * returns void
-  */
-  search(): void {
+    parseNumber(noToParse){
+      return isNaN(parseInt(noToParse)) ? 0 : parseInt(noToParse)
+    }
 
-    this.spinner.show();
+    drop(event){
+      //find the crew to which we are mapping the order
+      let crew = this.lstCrew.find(crew => crew.CrewId == this.schedulerService.mapToCrew.crewId);
+      let day = this.schedulerService.mapToCrew.day;
+      let dayAvailableCapacity = crew[day]['AvailableCapacity'];
 
-    this.filterValues["DateFrom"] = this.employeeSearchModel.DateFrom;
-    this.filterValues["WmcId"] = this.filterSelectObj[0].preSelected;
-    this.filterValues["HeadquarterId"] = this.filterSelectObj[1].preSelected;
-    this.filterValues["WorkPeriod"] = this.employeeSearchModel.WorkPeriod;
-    this.filterValues["EnergyTypeId"] = this.employeeSearchModel.EnergyTypeId;
+      //check if crew capacity for the day is fully assigned
+      if (dayAvailableCapacity == 0){
+        this.schedulerService.mapToCrew = null;
+        alert('Crew capacity reached');
+      }
 
-    this.storage.setItem(this.selectedTab, JSON.stringify(this.filterValues));
-    this.filterService.updatedDataSelection(this.filterValues);
-  }
+      if (this.schedulerService.mapToCrew != null){
+        this.adjustCapacity(event, crew);
+      }
+    }
+
+    //event: drop event
+    //crew: crew to which the dragged/selected order to be mapped
+    adjustCapacity(event, crew) {
+      //get the dragged/selected order
+      let selectedOrder = this.lstOrder[event.previousIndex];
+      
+      this.openModal(event, selectedOrder, crew);
+    }
+
+    openModal(event, selectedOrder, crew){
+      //open modal to adjust job hours and crew capacity before mapping order to crew
+      const modalOptions: NgbModalOptions = {
+        size: 'sm',
+        keyboard: false,
+        backdrop: 'static'
+      };
+      const modalRef = this.modalService.open(MapCrewOrderComponent, modalOptions); 
+      modalRef.componentInstance.inputJobHours = selectedOrder['noOfHours'];
+      let day = this.schedulerService.mapToCrew.day;
+      modalRef.componentInstance.inputCrewCapacity = (crew[day]['UpdatedCapacity'] == null || crew[day]['UpdatedCapacity'] == "")
+                                 ? crew[day]['Capacity'] : crew[day]['UpdatedCapacity'];
+      modalRef.componentInstance.outputCapacity.subscribe((emittedValue) => {
+        //get the updated job hours and crew capacity from modal
+        this.updatedHours = emittedValue;
+      })
+      modalRef.result.then((resolveReason) => {
+        if (resolveReason == 'save'){
+          this.mapOrderToCrew(event, selectedOrder, crew);
+        }
+        else if (resolveReason == 'cancel' || resolveReason == 'close'){
+          this.schedulerService.mapToCrew = null;
+        }
+      });
+    }
+
+    mapOrderToCrew(event, selectedOrder, crew){      
+      let day = this.schedulerService.mapToCrew.day;
+
+      let jobHours = 0;
+      //if user updates the selected job hours, update it in orders list and use the updated job hours
+      jobHours =  this.updatedHours.JobHours;
+      selectedOrder['noOfHours'] = this.updatedHours.JobHours;
+
+      let crewDayCapacity = 0;
+      //if user updates the crew capacity, update the capacity in crew list and use the updated value
+      crew[day]['UpdatedCapacity'] = this.updatedHours.CrewCapacity;
+      crew[day]['AvailableCapacity'] = this.updatedHours.CrewCapacity;
+      crewDayCapacity = this.updatedHours.CrewCapacity;
+
+      let mappedJobHours = 0;
+      if (jobHours > crewDayCapacity){
+        //from the selected order/job, subtract the hours assigned to crew
+        selectedOrder['noOfHours'] = jobHours - crewDayCapacity;
+        crew[day]['AvailableCapacity'] = 0;
+        mappedJobHours = crewDayCapacity;
+      }
+      else {
+          //remove selected order from list
+          this.lstOrder.splice(event.previousIndex, 1);
+          //update the available capacity (remove assigned job hours from total capacity)
+          crew[day]['AvailableCapacity'] = crewDayCapacity - jobHours;
+          mappedJobHours = selectedOrder['noOfHours']
+      }
+      
+      //map selected order to crew
+      crew[day]['OrdersList'].push({
+        orderKey: selectedOrder['orderKey'],
+        orderDesc: selectedOrder['description'],
+        noOfHours: mappedJobHours,
+        orderStyle: (selectedOrder.orderCategory == 'Compliance' || selectedOrder.custComm == 'Y') ? 'orderRowCompCustComm' : 
+                    selectedOrder.orderCategory == 'COTD' ? 'orderRowCOTD' : null
+      });
+
+      this.schedulerService.mapToCrew = null;
+    }
+
+    removeMapping(key, crewId, day){
+      //find the crew from which order has to be removed
+      let crew = this.lstCrew.find(crew => crew.CrewId == crewId);
+
+      this.addOrderBackToOrderList(key, crew, day);
+      this.removeOrderFromCrew(key, crew, day);
+    }
+
+    addOrderBackToOrderList(key, crew, day){
+       //find the order to remove from crew mapping. 
+       let addOrderBack = JSON.parse(JSON.stringify(this.allOrders.find(order => order.orderKey == key)));
+    
+       //check if order is already in orderslist
+       let orderAlreadyExists = this.lstOrder.find(order => order.orderKey == key);
+
+       //from the crew list, find the order for which mapping has to be removed, and get the no of job hours mapped to that crew
+       let orderToRemoveFromCrew = crew[day]['OrdersList'].filter(order => order.orderKey == key);
+       addOrderBack['noOfHours'] = orderToRemoveFromCrew[0]['noOfHours'];
+
+       if (orderAlreadyExists){
+         //if order already exists, add the mapped hours back to the order list
+         orderAlreadyExists['noOfHours'] += this.parseNumber(addOrderBack['noOfHours']);
+       }
+       else {
+         //add the order back to order list
+         this.lstOrder.push(addOrderBack);
+       }
+
+       //add the removed job hours back to the day capacity of crew 
+       crew[day]['AvailableCapacity'] += this.parseNumber(orderToRemoveFromCrew[0]['noOfHours']);
+    }
+
+    removeOrderFromCrew(key, crew, day){
+      //remove the order
+      crew[day]['OrdersList'] = crew[day]['OrdersList'].filter(order => order.orderKey != key);
+    }
+
+    reviewSchedule(){
+
+    }
+
+    finalizeSchedule(){
+      console.log(this.lstCrew);
+    }
 }
