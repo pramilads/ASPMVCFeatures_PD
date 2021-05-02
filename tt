@@ -1,71 +1,12 @@
-export class EmployeeSearchModel {
-  WmcId: string;
-  HeadquarterId: string;
-  EnergyTypeId: bigint;
-  DateFrom: string;
-  DateTo: string;
-  WorkPeriod: string;
-}
+import { Pipe, PipeTransform } from '@angular/core';
+@Pipe({
+    name: 'ddlFilter'
+})
+export class FilterByDropDownNamePipe implements PipeTransform {
 
-export class OrderSearchModel {
-  WmcId: string;
-  HeadquarterId: string;
-  EnergyTypeId: bigint;
-  DateFrom: string;
-  DateTo: string;
-  WorkPeriod: string;
-}
-
-export class OrderCrewSearchModel {
-  WorkType: string;
-}
-
-
-export class CrewUpdateModel {
-  Id: string;
-  Active: number;
-  EmployeeClassficationId: string;
-}
-
-export class OrderDetailsUpdateModel {
-  Hours: string;
-  StartDate: string;
-  EndDate: string;
-  UnloadingPoint: string;
-  Comments: string;
-  WorkOrderId: string;
-}
-
-export class OrderListUpdateModel {
-  OrderListToUpdate: OrderInfoUpdateModel[];
-}
-
-//checkboxes in order list table
-export class OrderInfoUpdateModel {
-  WorkOrderId: string;
-  CustComm: string;
-  CoordinationReq: string;
-  ThirdParty: string;
-  Bore: string;
-  Welder: string;
-  Hydro: string;
-  Sewer: string;
-  TTC: string;
-  SpecialEquipment: string;
-  Planned: string;
-}
-
-export class UpdatedHours {
-  JobHours: number;
-  CrewCapacity: number;
-}
-
-export class OrdersToSchedule {
-  WorkOrderId: string;
-  IsSelected: string;
-}
-
-export class User {
-  username: string;
-  isAuthenticated: boolean;
+    transform(dropDownData : any, dropDownName: string): any[] {
+        if (dropDownData) {
+            return dropDownData.filter((ddl) => ddl.dropdownName === dropDownName);
+        }
+    }
 }
