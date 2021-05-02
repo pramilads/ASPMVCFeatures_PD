@@ -1,34 +1,200 @@
-import { OrderDetailsUpdateModel } from './../../../shared/models/search.model';
-import { Component, Input } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { SchedulerService } from 'src/app/core/services/scheduler.service';
+<div>
+    <div>
+        <label class="col-form-label">Filter Records: </label>
+        <mat-form-field *ngFor="let filter of filterSelectObj; let i = index" style="margin-left: 15px;width: 100px;">
+            <mat-label>{{filter.name}}</mat-label>
+            <mat-select #matSelect multiple [formControl]="filter.formCtrl">
+                <mat-option *ngFor="let item of filter.options" [value]="item">{{item}}</mat-option>
+                <button class="btn btn-primary btn-sm m-2" (click)="ok(i, filter)">Ok</button>
+                <button class="btn btn-primary btn-sm" (click)="cancel(i, filter)">Cancel</button>
+            </mat-select>
+        </mat-form-field>
+        &nbsp;
+        <button mat-flat-button color="warn" (click)="resetFilters()" class="btn btn-primary btn-sm">Reset</button>
 
-@Component({
-  selector: 'order-edit',
-  templateUrl: './order-edit.component.html',
-})
-export class OrderEditComponent {
-  @Input() inputOrderInfo;
-  orderDetailsUpdateModel: OrderDetailsUpdateModel;
-  constructor(
-    public activeModal: NgbActiveModal,
-    private schedulerService: SchedulerService
-  ) {}
+    </div>
 
-  ngOnInit() {
-    console.log(this.inputOrderInfo);
-  }
+    <div class="mat-table-container">
+        <table mat-table [dataSource]="dataSource" style="width: 100%;" matSort matSortActive="basicFinishDate"
+            matSortDirection="asc">
+            <ng-container matColumnDef="schdOrder">
+                <th mat-header-cell *matHeaderCellDef> Schd<br />Order</th>
+                <td mat-cell *matCellDef="let element">
+                    <input type="checkbox" (click)="selectOrdersForScheduling(element.workOrderId, $event)"
+                        [checked]="element.isSelected == 'Y'" />
+                </td>
+            </ng-container>
 
-  updateOrderDetails() {
-    this.orderDetailsUpdateModel = new OrderDetailsUpdateModel();
-    this.orderDetailsUpdateModel.Hours = this.inputOrderInfo.NoOfHours;
-    this.orderDetailsUpdateModel.StartDate = this.inputOrderInfo.ScheduleStartDate;
-    this.orderDetailsUpdateModel.EndDate = this.inputOrderInfo.scheduledFinish;
-    this.orderDetailsUpdateModel.UnloadingPoint = this.inputOrderInfo.UnloadingPoint;
-    this.orderDetailsUpdateModel.Comments = this.inputOrderInfo.Comments;
-    this.orderDetailsUpdateModel.WorkOrderId = this.inputOrderInfo.workOrderId;
-    this.schedulerService.updateOrderDetails(this.orderDetailsUpdateModel).subscribe(res => {
-        this.activeModal.close('save');
-    });
-  }
-}
+            <ng-container matColumnDef="orderKey">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Order<br />Key</th>
+                <td mat-cell *matCellDef="let element">
+                    {{element.orderKey}}
+                    <span class="ml-2" (click)="editOrder(element.workOrderId)">
+                        <i class="fa fa-edit" title="Edit Order"></i>
+                    </span>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="plant">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Order<br/>Plant</th>
+                <td mat-cell *matCellDef="let element"> {{element.plant}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="description">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Desription</th>
+                <td mat-cell *matCellDef="let element"> {{element.description}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="orderType">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Order<br />Type</th>
+                <td mat-cell *matCellDef="let element"> {{element.orderType}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="mat">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>MAT</th>
+                <td mat-cell *matCellDef="let element"> {{element.mat}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="orderCategory">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Order<br />Category</th>
+                <td mat-cell *matCellDef="let element"> {{element.orderCategory}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="scheduledStart">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Scheduled<br />Start</th>
+                <td mat-cell *matCellDef="let element"> {{element.scheduledStart}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="scheduledFinish">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Scheduled<br />Finish</th>
+                <td mat-cell *matCellDef="let element"> {{element.scheduledFinish}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="basicFinishDate">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Basic<br />Finish<br />Date</th>
+                <td mat-cell *matCellDef="let order" [ngClass]="getBasicFinishDateStyle(order.basicFinishDate)">
+                    {{order.basicFinishDate}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="omOrCapital">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>O&M/<br />Capital</th>
+                <td mat-cell *matCellDef="let element"> {{element.omOrCapital}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="unloadingPoint">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Unloading<br />Point</th>
+                <td mat-cell *matCellDef="let element"> {{element.unloadingPoint}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="missDig">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Miss<br />Dig</th>
+                <td mat-cell *matCellDef="let element"> {{element.missDig}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="missDigDate">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Miss<br />Dig<br />Date</th>
+                <td mat-cell *matCellDef="let element"> {{element.missDigDate}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="comments">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Comments</th>
+                <td mat-cell *matCellDef="let element"> {{element.comments}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="custComm">
+                <th mat-header-cell *matHeaderCellDef>Cust.<br />Comm.</th>
+                <td mat-cell *matCellDef="let order">
+                    <input type="checkbox" [checked]="order.custComm == 'Y'" [(ngModel)]="order.custComm"
+                        (click)="checkboxUpdated(order.workOrderId)" />
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="coordReq">
+                <th mat-header-cell *matHeaderCellDef>Coord.<br />Req.</th>
+                <td mat-cell *matCellDef="let order">
+                    <input type="checkbox" [checked]="order.coordinationReq == 'Y'" [(ngModel)]="order.coordinationReq"
+                        (click)="checkboxUpdated(order.workOrderId)" />
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="thirdParty">
+                <th mat-header-cell *matHeaderCellDef>3rd<br />Party</th>
+                <td mat-cell *matCellDef="let order">
+                    <input type="checkbox" [checked]="order.thirdParty == 'Y'" [(ngModel)]="order.thirdParty"
+                        (click)="checkboxUpdated(order.workOrderId)" />
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="bore">
+                <th mat-header-cell *matHeaderCellDef>Bore</th>
+                <td mat-cell *matCellDef="let order">
+                    <input type="checkbox" [checked]="order.bore == 'Y'" [(ngModel)]="order.bore"
+                        (click)="checkboxUpdated(order.workOrderId)" />
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="welder">
+                <th mat-header-cell *matHeaderCellDef>Welder</th>
+                <td mat-cell *matCellDef="let order">
+                    <input type="checkbox" [checked]="order.welder == 'Y'" [(ngModel)]="order.welder"
+                        (click)="checkboxUpdated(order.workOrderId)" />
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="hydro">
+                <th mat-header-cell *matHeaderCellDef>Hydro</th>
+                <td mat-cell *matCellDef="let order">
+                    <input type="checkbox" [checked]="order.hydro == 'Y'" [(ngModel)]="order.hydro"
+                        (click)="checkboxUpdated(order.workOrderId)" />
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="sewer">
+                <th mat-header-cell *matHeaderCellDef>Sewer</th>
+                <td mat-cell *matCellDef="let order">
+                    <input type="checkbox" [checked]="order.sewer == 'Y'" [(ngModel)]="order.sewer"
+                        (click)="checkboxUpdated(order.workOrderId)" />
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="ttc">
+                <th mat-header-cell *matHeaderCellDef>TTC</th>
+                <td mat-cell *matCellDef="let order">
+                    <input type="checkbox" [checked]="order.ttc == 'Y'" [(ngModel)]="order.ttc"
+                        (click)="checkboxUpdated(order.workOrderId)" />
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="specEquip">
+                <th mat-header-cell *matHeaderCellDef>Spec.<br />Equip.</th>
+                <td mat-cell *matCellDef="let order">
+                    <input type="checkbox" [checked]="order.specialEquipment == 'Y'"
+                        [(ngModel)]="order.specialEquipment" (click)="checkboxUpdated(order.workOrderId)" />
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="planned">
+                <th mat-header-cell *matHeaderCellDef>Planned</th>
+                <td mat-cell *matCellDef="let order" [ngClass]="order.planned == 'Y' ? 'tdOrderPlanned' : ''">
+                    <input type="checkbox" [checked]="order.planned == 'Y'" [(ngModel)]="order.planned"
+                        (click)="checkboxUpdated(order.workOrderId)" />
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns;sticky:true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="(row.orderCategory == 'Compliance' || row.custComm === 'Y') ? 'orderRowCompCustComm' : 
+                row.orderCategory == 'COTD' ? 'orderRowCOTD' : null">
+            </tr>
+
+        </table>
+    </div>
+
+    <div class="row form-group mt-3">
+        <div class="col-12 text-center">
+            <button type="submit" class="btn btn-primary btn-sm mr-3" (click)="saveOrdersForScheduling()">Save Orders
+                For Scheduling</button>
+            <button type="submit" class="btn btn-primary btn-sm" (click)="saveOrderDetails()">Save Order
+                Information</button>
+        </div>
+    </div>
+</div>
