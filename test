@@ -1,228 +1,177 @@
-<div>
-    <div class="table-responsive">
+import { SchedulerService } from 'src/app/core/services/scheduler.service';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import {
+  NgbModal,
+  NgbModalOptions,
+  ModalDismissReasons,
+} from '@ng-bootstrap/ng-bootstrap';
+
+import { EmployeeEditComponent } from '../employee-edit/employee-edit.component';
+import { SortEvent, compare } from 'src/app/shared/directives/sort.directive';
+import { SelectionModel } from '@angular/cdk/collections';
+import { MatTableDataSource } from '@angular/material/table';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatIconModule} from '@angular/material/icon';
 
 
 
-        <table mat-table [dataSource]="sortedEmployeeList" class="mat-elevation-z8">
-
-            <!--- Note that these columns can be defined in any order.
-                  The actual rendered columns are set as a property on the row definition" -->
-
-            <!-- Position Column -->
-            <ng-container matColumnDef="select">
-                <th mat-header-cell *matHeaderCellDef>
-                  
-                    <!-- <mat-checkbox (change)="$event ? masterToggle() : null"
-                        [checked]="selection.hasValue() && isAllSelected()"
-                        [indeterminate]="selection.hasValue() && !isAllSelected()">
-                    </mat-checkbox> -->
-                 
-                   Crew Type
-
-
-                </th>
-
-                <!-- <td mat-cell *matCellDef="let row">
-                    <mat-checkbox style="background-color: rgb(0, 119, 255);">
-                    </mat-checkbox>
-                  </td> -->
-
-                <td mat-cell *matCellDef="let row">
-                    <mat-checkbox style="background-color: rgb(0, 119, 255);" (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null"
-                        [checked]="selection.isSelected(row)">
-                    </mat-checkbox>
-
-                    
-        
-                </td>
-            </ng-container>
-
-            <ng-container matColumnDef="headquarter">
-                <th mat-header-cell *matHeaderCellDef> Headquarters </th>
-                <td mat-cell *matCellDef="let element"> {{element.headquarter}} </td>
-            </ng-container>
-
-            <!-- Name Column -->
-            <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef> Employee Name </th>
-                <td mat-cell *matCellDef="let element"> {{element.name}} 
-                    <span class="ml-2" (click)="editEmployee(emp.id)">
-                        <i class="fa fa-edit" title="Edit employee"></i>
-                    </span>
-                </td>
-            </ng-container>
-
-            <!-- Symbol Column -->
-            <ng-container matColumnDef="employeeType">
-                <th mat-header-cell *matHeaderCellDef> Employee Type </th>
-                <td mat-cell *matCellDef="let element"> {{element.employeeType}} </td>
-            </ng-container>
-            <!-- Weight Column -->
-            <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef> Status </th>
-                <td mat-cell *matCellDef="let element"> {{element.status}} </td>
-            </ng-container>
+export interface PeriodicElement {
+//  employeeTypeId: number;
+headquarter: string;
+  //id: number;
+  name: string;
+  employeeType: string;
+  status: string; 
+  mon: string;
+  tues: string;
+  wed: string;
+  thur: string;
+  fri: string;
+  sat: string;
+  sun: string;
+}
 
 
-            <ng-container matColumnDef="mon">
-                <th mat-header-cell *matHeaderCellDef> Mon </th>
-                <td mat-cell *matCellDef="let element"> {{element.mon}} </td>
-            </ng-container>
+@Component({
+  selector: 'app-crew-info',
+  templateUrl: 'crew-info.component.html',
+})
+export class CrewInfoComponent implements OnInit {
+  displayedColumns: string[] = ['select', 'headquarter', 'name', 'employeeType', 'status', 'mon', 'tues', 'wed', 'thur', 'fri', 'sat', 'sun'];
+  secondDisplayedColumns: string[] = ['select','name','mon','tues','wed','thur','fri','sat','sun'];
+  @Input() crewList: any = [];
+  @Input() empResp: any;
 
-            <ng-container matColumnDef="tues">
-                <th mat-header-cell *matHeaderCellDef> Tue </th>
-                <td mat-cell *matCellDef="let element"> {{element.tues}} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="wed">
-                <th mat-header-cell *matHeaderCellDef> Wed </th>
-                <td mat-cell *matCellDef="let element"> {{element.wed}} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="thur">
-                <th mat-header-cell *matHeaderCellDef> Thur </th>
-                <td mat-cell *matCellDef="let element"> {{element.thur}} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="fri">
-                <th mat-header-cell *matHeaderCellDef> Fri </th>
-                <td mat-cell *matCellDef="let element"> {{element.fri}} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="sat">
-                <th mat-header-cell *matHeaderCellDef> Sat </th>
-                <td mat-cell *matCellDef="let element"> {{element.sat}} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="sun">
-                <th mat-header-cell *matHeaderCellDef> Sun </th>
-                <td mat-cell *matCellDef="let element"> {{element.sun}} </td>
-            </ng-container>
+  sortedEmployeeList = new MatTableDataSource<PeriodicElement>();
+  @Output() outputEmployeeList = new EventEmitter<any>();
+  currentPage = 1;
+  recordsPerPage: number;
+  maxPageToDisplay: number;
+  columnsToSort: any = {};
+  formCrewDisabled: boolean = true;
+  selection = new SelectionModel<PeriodicElement>(true, []);
 
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table> <br>
+ selectedEmployees =  new MatTableDataSource<any>();
+
+  constructor(private modalService: NgbModal, private schedulerService: SchedulerService) { }
+
+  ngOnInit(): void {
+    console.log(JSON.stringify(this.empResp));
+    console.log(this.crewList);
+    this.sortedEmployeeList =  new MatTableDataSource(this.crewList);// this.crewList;
+    this.recordsPerPage = this.crewList?.length;
+    this.maxPageToDisplay = Math.ceil(
+      this.crewList?.length / this.recordsPerPage
+    );
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    this.sortedEmployeeList = changes.crewList?.currentValue;
+    this.recordsPerPage = changes.crewList?.currentValue?.length;
+    this.maxPageToDisplay = Math.ceil(
+      changes.crewList?.currentValue?.length / this.recordsPerPage
+    );
+  }
+
+  setPageSize(evt): void {
+    this.recordsPerPage =
+      evt.target.value === '' ? this.crewList?.length : evt.target?.value;
+  }
+
+  editEmployee(empId): void {
+    const modalOptions: NgbModalOptions = {
+      size: 'lg',
+      keyboard: false,
+      backdrop: 'static',
+    };
+    const modalRef = this.modalService.open(
+      EmployeeEditComponent,
+      modalOptions
+    );
+    const empInfo = JSON.parse(JSON.stringify(this.crewList)); // get a copy of employee list
+    modalRef.componentInstance.inputEmployeeInfo = empInfo.filter(
+      (emp) => emp.id === empId
+    )[0];
+
+    modalRef.result.then(
+      (resolveReason) => {
+        if (resolveReason === 'save') {
+          this.outputEmployeeList.emit();
+        } else if (resolveReason === 'cancel') {
+          alert('do nothing');
+        }
+      },
+      (rejectReason) => {
+        alert(`Dismissed ${this.getDismissReason(rejectReason)}`);
+      }
+    );
+  }
+
+  private getDismissReason(reason: any): string {
+    if (reason === ModalDismissReasons.ESC) {
+      return 'by pressing ESC';
+    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
+      return 'by clicking on a backdrop';
+    } else {
+      return `with: ${reason}`;
+    }
+  }
+
+  // onSort({ column, direction }: SortEvent): void {
+  //   this.columnsToSort = { ...this.columnsToSort, [column]: direction };
+
+  //   // sorting
+  //   const noOfSortedCols = Object.keys(this.columnsToSort).filter(
+  //     (key) => this.columnsToSort[key] !== ''
+  //   ).length;
+  //   if (noOfSortedCols === 0) {
+  //     this.sortedEmployeeList = this.crewList;
+  //   } else {
+  //     this.sortedEmployeeList = [...this.crewList].sort((a, b) => {
+  //       return compare(a, b, this.columnsToSort);
+  //     });
+  //   }
+  // }
+
+  setSelectedCrewMembers(evt, emp) {
+    this.schedulerService.selectedCrewMembers.push(emp);
+    emp['isSelected'] = evt.target.checked;
+    this.formCrewDisabled = false;
+  }
+
+  // formCrew() {
+  //   alert("formCrew");
+  //   this.schedulerService.formCrewSubject.next();
+  //   this.sortedEmployeeList.data.forEach(emp => emp.isSelected = false);
+  //   this.formCrewDisabled = true;
+  // }
 
 
-    </div>
-
-    <div class="row">
-        <div class="col-md-12">
-            <div class="form-group row">
-                <label class="ml-3 col-form-label text-md-left">Page Size: </label>
-                <div class="col-md-1">
-                    <select class="form-control" (change)="setPageSize($event)">
-                        <option></option>
-                        <option>10</option>
-                        <option>20</option>
-                        <option>30</option>
-                        <option>40</option>
-                        <option>50</option>
-                    </select>
-                </div>
-                <div class="col-sm-3">
-                    <ngb-pagination class="pagination" [collectionSize]="crewList?.length" [(page)]="currentPage"
-                        [pageSize]="recordsPerPage" [maxSize]="maxPageToDisplay"></ngb-pagination>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row"> 
-        <div class="col-md-12 center">
-            <button class="btn btn-primary btn-sm" (click)="logSelection()" >Form Crew</button>
-        </div>
-    </div>
-
-
-    <div *ngIf="selectedEmployees.data.length>0">
-        <table  mat-table  [dataSource]="selectedEmployees" class="mat-elevation-z8">
-
-        <!--- Note that these columns can be defined in any order.
-              The actual rendered columns are set as a property on the row definition" -->
-      
-        <!-- Position Column -->
-        <ng-container matColumnDef="select">
-          <th mat-header-cell *matHeaderCellDef>
-            
-          </th>
-          <td mat-cell *matCellDef="let row">
-            <!-- <mat-checkbox style="background-color: rgb(0, 119, 255);">
-            </mat-checkbox> -->
-
-            <mat-icon>location_off</mat-icon>
-
-          </td>
-        </ng-container>
+  isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.sortedEmployeeList.data.length;
+    return numSelected === numRows;
+  }
+  masterToggle() {
+    alert("masterToggle");
     
-        <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef> Crew </th>
-          <td mat-cell *matCellDef="let element"> 
-            <span class="rowItems">
-              {{element.name}}
-            </span> 
-            <span class="rowItems">
-              Type- {{element.employeeType}}
-            </span> 
-            <span class="rowItems">
-             TruckId- {{element.id}}
-            </span> 
-          </td>
-        </ng-container>
-      
-        <!-- Name Column -->
-        
-      
-        <ng-container matColumnDef="mon">
-            <th mat-header-cell *matHeaderCellDef> Mon </th>
-            <td mat-cell *matCellDef="let element"> {{element.mon}} </td>
-          </ng-container>
-    
-          <ng-container matColumnDef="tues">
-            <th mat-header-cell *matHeaderCellDef> Tue </th>
-            <td mat-cell *matCellDef="let element"> {{element.tues}} </td>
-          </ng-container>
-    
-          <ng-container matColumnDef="wed">
-            <th mat-header-cell *matHeaderCellDef> Wed </th>
-            <td mat-cell *matCellDef="let element"> {{element.wed}} </td>
-          </ng-container>
-    
-          <ng-container matColumnDef="thur">
-            <th mat-header-cell *matHeaderCellDef> Thur </th>
-            <td mat-cell *matCellDef="let element"> {{element.thur}} </td>
-          </ng-container>
-    
-          <ng-container matColumnDef="fri">
-            <th mat-header-cell *matHeaderCellDef> Fri </th>
-            <td mat-cell *matCellDef="let element"> {{element.fri}} </td>
-          </ng-container>
-    
-          <ng-container matColumnDef="sat">
-            <th mat-header-cell *matHeaderCellDef> Sat </th>
-            <td mat-cell *matCellDef="let element"> {{element.sat}} </td>
-          </ng-container>
+     this.isAllSelected() ?
+    this.selection.clear():
+    this.sortedEmployeeList.data.forEach(row => this.selection.select(row));
+    console.log(JSON.stringify(this.sortedEmployeeList.data));
+  }
 
-          <ng-container matColumnDef="sun">
-            <th mat-header-cell *matHeaderCellDef> Sun </th>
-            <td mat-cell *matCellDef="let element"> {{element.sun}} </td>
-          </ng-container>
-    
-      
-        <tr mat-header-row *matHeaderRowDef="secondDisplayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: secondDisplayedColumns;"></tr>
-      </table><br><br><br>
+  logSelection() {
+    this.selectedEmployees =  new MatTableDataSource<any>();
+    alert("logSelection");
+    let Table = []
+    this.selection.selected.forEach(s => Table.push(s));
+   // this.sortedEmployeeList.data = Table;
+    this.selectedEmployees = new MatTableDataSource<any>(Table)  ;
+
+    console.log(Table);
+  }
 
 
-
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div>
-                <crew-composition></crew-composition>
-            </div>
-        </div>
-    </div>
-</div>
+}
