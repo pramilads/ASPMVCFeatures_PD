@@ -1,192 +1,55 @@
+import { Component, OnInit, Input } from '@angular/core';
+import { CrewCompositionUpdateModel } from './../../../shared/models/search.model';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { SchedulerService } from 'src/app/core/services/scheduler.service';
-import { Component,ViewChild, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import {
-  NgbModal,
-  NgbModalOptions,
-  ModalDismissReasons,
-} from '@ng-bootstrap/ng-bootstrap';
-
-import { EmployeeEditComponent } from '../employee-edit/employee-edit.component';
-import { SortEvent, compare } from 'src/app/shared/directives/sort.directive';
-import { SelectionModel } from '@angular/cdk/collections';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatIconModule } from '@angular/material/icon';
-import {MatSort} from '@angular/material/sort';
-import { MatPaginator} from '@angular/material/paginator';
-//import { table } from 'console';
-
-
-export interface PeriodicElement {
-  headquarter: string;
-  name: string;
-  employeeType: string;
-  status: string;
-  mon: string;
-  tues: string;
-  wed: string;
-  thur: string;
-  fri: string;
-  sat: string;
-  sun: string;
-}
-
+import { NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
-  selector: 'app-crew-info',
-  templateUrl: 'crew-info.component.html',
+  selector: 'app-crew-work-event',
+  templateUrl: './crew-work-event.component.html',
 })
-export class CrewInfoComponent implements OnInit {
-  displayedColumns: string[] = ['select', 'headquarter', 'name', 'employeeType', 'status',  'mon', 'tues', 'wed', 'thur', 'fri', 'sat', 'sun'];
-  secondDisplayedColumns: string[] = ['select', 'name', 'mon', 'tues', 'wed', 'thur', 'fri', 'sat', 'sun'];
-  @Input() crewList: any = [];
-  @Input() empResp: any;
-  // @ViewChild(MatSort) sort: MatSort;
-  @ViewChild(MatSort, {static: true}) sort: MatSort;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  sortedEmployeeList = new MatTableDataSource<PeriodicElement>();
-  @Output() outputEmployeeList = new EventEmitter<any>();
-  currentPage = 1;
-  recordsPerPage: number;
-  maxPageToDisplay: number;
-  columnsToSort: any = {};
-  formCrewDisabled: boolean = true;
-  selection = new SelectionModel<PeriodicElement>(true, []);
-  selectedEmployees = [];
-  showSecondTable = false;
-  displayCrewComp = false;
+export class CrewWorkEventComponent implements OnInit {
+  @Input() inputCrewCompositionInfo;
+  dropDownData: any;
+  isActive: boolean;
+  crewCompositionUpdateModel: CrewCompositionUpdateModel;
 
-  constructor(private modalService: NgbModal, private schedulerService: SchedulerService) { }
-
-  
-  ngAfterViewInit() {
-    //this.selectedEmployees.paginator = this.paginator;
-    //this.selectedEmployees.sort = this.sort;
-  }
+  constructor(
+    public activeModal: NgbActiveModal,
+    private schedulerService: SchedulerService,
+    private spinner: NgxSpinnerService
+  ) { }
 
   ngOnInit(): void {
-
-    console.log(JSON.stringify(this.empResp));
-    console.log(this.crewList);
-    this.sortedEmployeeList = new MatTableDataSource(this.crewList);// this.crewList;
-    this.sortedEmployeeList.sort = this.sort;
-    this.recordsPerPage = this.crewList?.length;
-    this.maxPageToDisplay = Math.ceil(
-      this.crewList?.length / this.recordsPerPage
-    );
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    this.sortedEmployeeList = changes.crewList?.currentValue;
-    this.recordsPerPage = changes.crewList?.currentValue?.length;
-    this.maxPageToDisplay = Math.ceil(
-      changes.crewList?.currentValue?.length / this.recordsPerPage
-    );
-  }
-
-  setPageSize(evt): void {
-    this.recordsPerPage =
-      evt.target.value === '' ? this.crewList?.length : evt.target?.value;
-  }
-
-  editEmployee(empId): void {
-    const modalOptions: NgbModalOptions = {
-      size: 'lg',
-      keyboard: false,
-      backdrop: 'static',
-    };
-    const modalRef = this.modalService.open(
-      EmployeeEditComponent,
-      modalOptions
-    );
-    const empInfo = JSON.parse(JSON.stringify(this.crewList)); // get a copy of employee list
-    modalRef.componentInstance.inputEmployeeInfo = empInfo.filter(
-      (emp) => emp.id === empId
-    )[0];
-
-    modalRef.result.then(
-      (resolveReason) => {
-        if (resolveReason === 'save') {
-          this.outputEmployeeList.emit();
-        } else if (resolveReason === 'cancel') {
-          alert('do nothing');
-        }
-      },
-      (rejectReason) => {
-        alert(`Dismissed ${this.getDismissReason(rejectReason)}`);
+  getDataForDropDowns() {
+    this.schedulerService.getCrewType().subscribe(
+      (res) => {
+        this.dropDownData = res.dropdownDetails;
       }
     );
   }
 
-  private getDismissReason(reason: any): string {
-    if (reason === ModalDismissReasons.ESC) {
-      return 'by pressing ESC';
-    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
-      return 'by clicking on a backdrop';
-    } else {
-      return `with: ${reason}`;
-    }
-  }
-
-  // onSort({ column, direction }: SortEvent): void {
-  //   alert("Sorting");
-  //   this.columnsToSort = { ...this.columnsToSort, [column]: direction };
-
-  //   // sorting
-  //   const noOfSortedCols = Object.keys(this.columnsToSort).filter(
-  //     (key) => this.columnsToSort[key] !== ''
-  //   ).length;
-  //   if (noOfSortedCols === 0) {
-  //     this.sortedEmployeeList = this.crewList;
-  //   } else {
-  //     this.sortedEmployeeList = [...this.crewList].sort((a, b) => {
-  //       return compare(a, b, this.columnsToSort);
-  //     });
-  //   }
-  // }
-
-  setSelectedCrewMembers(evt, emp) {
-    this.schedulerService.selectedCrewMembers.push(emp);
-    emp['isSelected'] = evt.target.checked;
-    this.formCrewDisabled = false;
-  }
-
-  // formCrew() {
-  //   alert("formCrew");
-  //   this.schedulerService.formCrewSubject.next();
-  //   this.sortedEmployeeList.data.forEach(emp => emp.isSelected = false);
-  //   this.formCrewDisabled = true;
-  // }
-
-
-  isAllSelected() {
-    alert("isAllSelected ....CI");
-    this.selectedEmployees =[];
-    const numSelected = this.selection.selected.length;
-    const numRows = this.sortedEmployeeList.data.length;
-    return numSelected === numRows;
-  }
-  masterToggle() {
-    alert("masterToggle...CI");
-    this.isAllSelected() ?
-        this.selection.clear() :
-        this.sortedEmployeeList.data.forEach(row => this.selection.select(row));
-  }
-
-  logSelection() {
-    //alert("logSelection...CI");
-    let Table =[];
-    this.selection.selected.forEach(s => Table.push(s));
-    //this.sortedEmployeeList.data.forEach(row => this.selection.deselect(row));
-    // this.tableDataSource=  new MatTableDataSource<any>(Table);
-    this.selectedEmployees.push(Table)
-
-    //this.selectedEmploy = new MatTableDataSource<any>(Table);
-    console.log(JSON.stringify(this.selectedEmployees))
-    this.showSecondTable=true;   
-    this.selection.clear();
+  updateCrewCompositionInfo(){
+    this.spinner.show();
+    this.crewCompositionUpdateModel = new CrewCompositionUpdateModel();
+    // this.crewUpdateModel.Active = this.isActive ? 1 : 0;
+    // this.crewCompositionUpdateModel.employeeTypeId = this.inputCrewCompositionInfo.;
+    // this.crewCompositionUpdateModel.WmcId = this.inputCrewCompositionInfo.id;
+    // this.crewCompositionUpdateModel.HeadquarterId = this.inputCrewCompositionInfo.
+    // this.crewCompositionUpdateModel.Hours = this.inputCrewCompositionInfo.
+    // this.crewCompositionUpdateModel.TruckId = this.inputCrewCompositionInfo.
+    // this.crewCompositionUpdateModel.StartDate = this.inputCrewCompositionInfo.
+    // this.crewCompositionUpdateModel.StartTime = this.inputCrewCompositionInfo.
+    // this.crewCompositionUpdateModel.EndTime = this.inputCrewCompositionInfo.
     
+    this.schedulerService.updateCrewCompositionInfo(this.crewCompositionUpdateModel).subscribe(
+      (res) => {
+        console.log(res);
+        this.activeModal.close('save');
+        this.spinner.hide();
+      }
+    )
   }
-
-  
 }
