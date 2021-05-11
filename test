@@ -1,129 +1,188 @@
-<div *ngIf="showSecondTableData()">
-  <table>
-    <thead>
-      <tr>
-        <th></th>
-        <th>Crew</th>
-        <th>Mon</th>
-        <th>Tue</th>
-        <th>Wed</th>
-        <th>Thur</th>
-        <th>Fri</th>
-        <th>Sat</th>
-        <th>Sun</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let items of selectedCrewLeadData; let rowI = index">
-        <td style="vertical-align: top;" *ngIf="items">
-          <mat-icon class="material-icons md-5" (click)="delete(rowI)" *ngIf="items">delete</mat-icon>
-        </td>
-        <td style="min-width: 180px;" *ngIf="items">
-          <span *ngFor="let item of items; let tdI = index">
-            <span class="rowItems">
-              {{ item.name }}
-            </span>
-          </span>
-          <span class="rowItems">
-          </span>
-          <span class="rowItems" *ngIf="items">
-            Type - {{items[rowI].employeeType}}
-          </span>
-          <span class="rowItems" *ngIf="items">
-            Truck Id - {{items[rowI].id}}
-          </span>
-        </td>
-        <td *ngIf="items">
-          <span *ngFor="let item of items; let tdI = index">
-            <span class="rowItems" *ngIf="tdI !== 0 && item.mon">
-              <mat-icon (click)="removeItems(rowI,tdI,'mon')" *ngIf="items">clear</mat-icon>
-              {{ item.mon }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,mon)" *ngIf="items">edit
-              </mat-icon>
-            </span>
-          </span>
-          <span class="rowItems">
-            <mat-icon *ngIf="items">add</mat-icon>
-          </span>
-        </td>
-        <td *ngIf="items">
-          <span *ngFor="let item of items; let tdI = index">
-            <span class="rowItems" *ngIf="tdI !== 0 && item.tues">
-              <mat-icon (click)="removeItems(rowI,tdI,'tues')" *ngIf="items">clear</mat-icon>
-              {{ item.tues }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,tues)" *ngIf="items">edit
-              </mat-icon>
-              <!-- <i class="fa fa-close" *ngIf="item.tues"></i> {{ item.tues }} <i class="fa fa-pencil" *ngIf="item.tues"></i> -->
-            </span>
-          </span>
-          <span class="rowItems">
-            <mat-icon *ngIf="items">add</mat-icon>
-          </span>
-        </td>
-        <td *ngIf="items">
-          <span *ngFor="let item of items; let tdI = index">
-            <span class="rowItems" *ngIf="tdI !== 0 && item.wed">
-              <mat-icon (click)="removeItems(rowI,tdI,'wed')" *ngIf="items">clear</mat-icon>
-              {{ item.wed }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,wed)" *ngIf="items">edit
-              </mat-icon>
-              <!-- <i class="fa fa-close" *ngIf="item.wed"></i> {{ item.wed }} <i class="fa fa-pencil" *ngIf="item.wed"></i> -->
-            </span>
-          </span>
-          <span class="rowItems">
-            <mat-icon *ngIf="items">add</mat-icon>
-          </span>
-        </td>
-        <td *ngIf="items">
-          <span *ngFor="let item of items; let tdI = index">
-            <span class="rowItems" *ngIf="tdI !== 0 && item.thur">
-              <mat-icon (click)="removeItems(rowI,tdI,'thur')" *ngIf="items">clear</mat-icon>
-              {{ item.thur }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,thur)" *ngIf="items">edit
-              </mat-icon>
-              <!-- <i class="fa fa-close" *ngIf="item.thur"></i> {{ item.thur }} <i class="fa fa-pencil" *ngIf="item.thur"></i> -->
-            </span>
-          </span>
-          <span class="rowItems">
-            <mat-icon *ngIf="items">add</mat-icon>
-          </span>
-        </td>
-        <td *ngIf="items">
-          <span *ngFor="let item of items; let tdI = index">
-            <span class="rowItems" *ngIf="tdI !== 0 && item.fri">
-              <mat-icon (click)="removeItems(rowI,tdI,'fri')" *ngIf="items">clear</mat-icon>
-              {{ item.fri }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,fri)" *ngIf="items">edit
-              </mat-icon>
-              <!-- <i class="fa fa-close" *ngIf="item.fri"></i> {{ item.fri }} <i class="fa fa-pencil" *ngIf="item.fri"></i> -->
-            </span>
-          </span>
-          <span class="rowItems">
-            <mat-icon *ngIf="items">add</mat-icon>
-          </span>
-        </td>
-        <td *ngIf="items">
-          <span *ngFor="let item of items; let tdI = index">
-            <span class="rowItems" *ngIf="tdI !== 0 && item.sat !== 0">
-              <mat-icon (click)="removeItems(rowI,tdI,'sat')" *ngIf="items">clear</mat-icon>
-              {{ item.sat }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,sat)" *ngIf="items">edit
-              </mat-icon>
-              <!-- <i class="fa fa-close" *ngIf="item.sat"></i> {{ item.sat }} <i class="fa fa-pencil" *ngIf="item.sat"></i> -->
-            </span>
-          </span>
-          <span class="rowItems">
-            <mat-icon *ngIf="items">add</mat-icon>
-          </span>
-        </td>
-        <td *ngIf="items">
-          <span *ngFor="let item of items; let tdI = index">
-            <span class="rowItems" *ngIf="tdI !== 0 && item.sun">
-              <mat-icon (click)="removeItems(rowI,tdI,'sun')" *ngIf="items">clear</mat-icon>
-              {{ item.sat }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,sun)" *ngIf="items">edit
-              </mat-icon>
-              <!-- <i class="fa fa-close" *ngIf="item.sat"></i> {{ item.sat }} <i class="fa fa-pencil" *ngIf="item.sat"></i> -->
-            </span>
-          </span>
-          <span class="rowItems">
-            <mat-icon *ngIf="items">add</mat-icon>
-          </span>
-        </td>
-      </tr>
-    </tbody>
-  </table><br><br><br>
-</div>
+import { SchedulerService } from 'src/app/core/services/scheduler.service';
+import { Component, Input,Output, EventEmitter, SimpleChanges } from '@angular/core';
+import { SelectionModel } from '@angular/cdk/collections';
+import {
+  NgbModal,
+  NgbModalOptions,
+  ModalDismissReasons,
+} from '@ng-bootstrap/ng-bootstrap';
+
+import { CrewWorkEventComponent } from '../crew-work-event/crew-work-event.component';
+
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+// import { MatDialog,MatDialogConfig } from '@angular/material/dialog';
+
+export interface PeriodicElement {
+  employeeTypeId: number;
+  headquarter: string;
+  id: number;
+  employeeName: string;
+  employeeType: string;
+  Status: string;
+  sun: string;
+  mon: string;
+  tues: string;
+  wed: string;
+  thur: string;
+  fri: string;
+  sat: string;
+
+}
+
+@Component({
+  selector: 'crew-composition',
+  templateUrl: './crew-composition.component.html'
+})
+export class CrewCompositionComponent {
+  @Input() data: any;
+  @Input() crewList: any = [];
+
+  selectedCrewLeadData = [];
+
+  lstCrew: any = [];
+  displayCrewComposition: boolean = false;
+  @Output() outputEmployeeList = new EventEmitter<any>();
+
+
+  // displayedColumns: string[] = ['select','headquarter', 'employeeName','employeeType','status','mon','tues','wed','thur','fri','sat'];
+  // secondDisplayedColumns: string[] = ['select','employeeName','mon','tues','wed','thur','fri','sat'];
+
+  dataSource = new MatTableDataSource<PeriodicElement>();
+  // dataSource = new MatTableDataSource<PeriodicElement>(environment.employees);
+  tableDataSource = new MatTableDataSource<any>();
+  selection = new SelectionModel<PeriodicElement>(true, []);
+
+  // totalRows = 0;
+  currentPage = 0;
+  rows: any = "10";
+  pageSize = 10;
+  totalRecords = 0;
+  defaultRows: any = this.rows;
+  defaultPage: any = 0;
+  pageOptions = [10, 20, 50, 100];
+  pageEvent: PageEvent;
+  joinedCrewEmployee = [];
+  showSecondTable = false;
+
+  constructor(private modalService: NgbModal, private schedulerService: SchedulerService) {
+
+  }
+
+  ngOnInit() {
+
+    console.log("crewDataSource..." + this.data);
+    this.selectedCrewLeadData = this.data;
+    console.log(" this.selectedCrewLeadData...." + this.selectedCrewLeadData);
+    this.showSecondTable = true;
+
+    this.schedulerService.formCrewSubject.subscribe(() => {
+      this.displayCrewComposition = true;
+      this.lstCrew.push(this.schedulerService.selectedCrewMembers);
+      this.schedulerService.selectedCrewMembers = [];
+    });
+  }
+
+
+  editCrewComposition(empId): void {
+    const modalOptions: NgbModalOptions = {
+      size: 'lg',
+      keyboard: false,
+      backdrop: 'static',
+    };
+    const modalRef = this.modalService.open(
+      CrewWorkEventComponent,
+      modalOptions
+    );
+    const empInfo = JSON.parse(JSON.stringify(this.crewList)); // get a copy of employee list
+    modalRef.componentInstance.inputEmployeeInfo = empInfo.filter(
+      (emp) => emp.id === empId
+    )[0];
+
+    modalRef.result.then(
+      (resolveReason) => {
+        if (resolveReason === 'save') {
+          this.outputEmployeeList.emit();
+        } else if (resolveReason === 'cancel') {
+          alert('do nothing');
+        }
+      },
+      (rejectReason) => {
+        alert(`Dismissed ${this.getDismissReason(rejectReason)}`);
+      }
+    );
+  }
+
+  private getDismissReason(reason: any): string {
+    if (reason === ModalDismissReasons.ESC) {
+      return 'by pressing ESC';
+    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
+      return 'by clicking on a backdrop';
+    } else {
+      return `with: ${reason}`;
+    }
+  }
+
+  handlePage(event): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.defaultPage = event.pageIndex;
+    this.defaultRows = event.pageSize;
+  }
+
+  // isAllSelected() {
+  //   alert("isAllSelected........CC");
+  //   const numSelected = this.selection.selected.length;
+  //   const numRows = this.dataSource.data.length;
+  //   return numSelected === numRows;
+  // }
+  // masterToggle() {
+  //   alert("masterToggle...CC");
+  //   this.isAllSelected() ?
+  //     this.selection.clear() :
+  //     this.dataSource.data.forEach(row => this.selection.select(row));
+  // }
+
+  // logSelection() {
+  //   alert("logSelection........CC");
+  //   let Table = []
+  //   this.selection.selected.forEach(s => Table.push(s));
+  //   this.tableDataSource = new MatTableDataSource<any>(Table);
+  // }
+
+
+  delete(index) {
+    this.showSecondTable = false;
+    let del = this.selectedCrewLeadData.splice(index, 1);
+    console.log(del)
+    console.log(this.selectedCrewLeadData);
+    this.showSecondTable = true;
+  }
+  // showSecondTableData() {
+  //   // this.joinedCrewEmployee=this.joinedCrewEmployee;
+  //   if (this.showSecondTable) { return true }
+  // }
+
+
+  // removeItems(arrIndex, tdIndex, key) {
+  //   console.log(this.joinedCrewEmployee)
+  // }
+
+
+  showSecondTableData(){
+    this.joinedCrewEmployee=this.joinedCrewEmployee;
+    if(this.showSecondTable){return true}
+  }
+
+  removeItems(arrIndex, tdIndex,key){
+    console.log(this.joinedCrewEmployee)
+    // var update = this.joinedCrewEmployee[arrIndex].splice(tdIndex,1)
+    this.selectedCrewLeadData[arrIndex][tdIndex][key]="0";
+    // console.log(update)
+  }
+
+  editItems(arrIndex, tdIndex,key){
+    alert("Hi")
+  }
+
+}
