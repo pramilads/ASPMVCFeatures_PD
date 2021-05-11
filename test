@@ -1,55 +1,94 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { CrewCompositionUpdateModel } from './../../../shared/models/search.model';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { SchedulerService } from 'src/app/core/services/scheduler.service';
-import { NgxSpinnerService } from 'ngx-spinner';
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-@Component({
-  selector: 'app-crew-work-event',
-  templateUrl: './crew-work-event.component.html',
-})
-export class CrewWorkEventComponent implements OnInit {
-  @Input() inputCrewCompositionInfo;
-  dropDownData: any;
-  isActive: boolean;
-  crewCompositionUpdateModel: CrewCompositionUpdateModel;
+<div class="modal-header">
+    <h4 class="modal-title">
+        Work Event
+    </h4>
+    <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('close')" ngAutoFocus="false">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
 
-  constructor(
-    public activeModal: NgbActiveModal,
-    private schedulerService: SchedulerService,
-    private spinner: NgxSpinnerService
-  ) { }
+<div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm" title="Work Event">
 
-  ngOnInit(): void {
-  }
 
-  getDataForDropDowns() {
-    this.schedulerService.getCrewType().subscribe(
-      (res) => {
-        this.dropDownData = res.dropdownDetails;
-      }
-    );
-  }
+            <tr>
+                <td>
+                    <button mat-icon-button color="primary">
+                        <mat-icon> circle </mat-icon>
+                        <i class="fas fa-circle"></i>
+                    </button>
+                </td>
+                <td></td>
+                <td>
+                    <mat-icon> person </mat-icon>
+                    <i class="fas fa-user"></i>
+                </td>
+                <!-- <td> <input class="form-control" placeholder="mm/dd/yyyy" readonly name="fromDateVal" required
+                        #fromDateVal="ngModel" (click)="fromDate.toggle()"
+                        [(ngModel)]="crewCompositionUpdateModel.DateFrom" ngbDatepicker #fromDate="ngbDatepicker"
+                        [markDisabled]="disableDateFrom">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" (click)="fromDate.toggle()" type="button">
+                            <i class="fa fa-calendar"></i>
+                        </button>
+                    </div>
+                </td> -->
+                <td></td>
+                <td></td>
+            </tr>
 
-  updateCrewCompositionInfo(){
-    this.spinner.show();
-    this.crewCompositionUpdateModel = new CrewCompositionUpdateModel();
-    // this.crewUpdateModel.Active = this.isActive ? 1 : 0;
-    // this.crewCompositionUpdateModel.employeeTypeId = this.inputCrewCompositionInfo.;
-    // this.crewCompositionUpdateModel.WmcId = this.inputCrewCompositionInfo.id;
-    // this.crewCompositionUpdateModel.HeadquarterId = this.inputCrewCompositionInfo.
-    // this.crewCompositionUpdateModel.Hours = this.inputCrewCompositionInfo.
-    // this.crewCompositionUpdateModel.TruckId = this.inputCrewCompositionInfo.
-    // this.crewCompositionUpdateModel.StartDate = this.inputCrewCompositionInfo.
-    // this.crewCompositionUpdateModel.StartTime = this.inputCrewCompositionInfo.
-    // this.crewCompositionUpdateModel.EndTime = this.inputCrewCompositionInfo.
-    
-    this.schedulerService.updateCrewCompositionInfo(this.crewCompositionUpdateModel).subscribe(
-      (res) => {
-        console.log(res);
-        this.activeModal.close('save');
-        this.spinner.hide();
-      }
-    )
-  }
-}
+            <tr>
+                <td>
+                    <mat-icon> today </mat-icon>
+                    <i class="far fa-clock"></i>
+                </td>
+                <td>
+                    <!-- <select class="form-control" [(ngModel)]="crewCompositionUpdateModel.employeeTypeId">
+                        <option *ngFor="let data of dropDownData | ddlFilter : 'CrewType'" [value]="data.id">
+                            {{data.name}}
+                        </option>
+                    </select> -->
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <mat-icon> cached </mat-icon>
+                    <i class="fa fa-refresh" aria-hidden="true"></i>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <mat-icon> cached </mat-icon>
+                    <i class="fa fa-refresh" aria-hidden="true"></i>
+
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <mat-icon> place </mat-icon>
+                    <i class="fas fa-place"></i>
+
+                </td>
+                <td></td>
+            </tr>
+
+        </table>
+    </div>
+    <div class="modal-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col text-center">
+                    <button type="button" class="btn btn-primary btn-sm mr-2"
+                        (click)="updateCrewCompositionInfo()">Save</button>
+                    <button type="button" class="btn btn-primary btn-sm"
+                        (click)="activeModal.close('cancel')">Discard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
