@@ -1,0 +1,177 @@
+<div *ngIf="showCrewCompostionTableData()">
+
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Crew</th>
+        <th width="125px">Mon</th>
+        <th width="125px">Tue</th>
+        <th width="125px">Wed</th>
+        <th width="125px">Thur</th>
+        <th width="125px">Fri</th>
+        <th width="125px">Sat</th>
+        <th width="125px">Sun</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let items of selectedCrewLeadData; let rowI = index">
+        <td style="vertical-align: top;" *ngIf="items">
+          <mat-icon class="size-12" style="align-self:top; color: red;" class="material-icons md-2"
+            (click)="delete(rowI)" *ngIf="items">delete
+          </mat-icon>
+
+        </td>
+        <td style="min-width: 180px;vertical-align: top;" *ngIf="items">
+          <span class="rowItems {{customStyle(tdI)}}" style="text-align: left; font-weight: bold;">
+            {{ items['crewLeadName'] }}
+          </span>
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems {{customStyle(tdI)}}" *ngIf="tdI !== 0" style="text-align: right;">
+              {{ item.name }}: <span *ngIf="item.mon && item.mon !== 0 ">M,</span>
+              <span *ngIf="item.tues && item.tues !== 0 ">T,</span>
+              <span *ngIf="item.wed && item.wed !== 0 ">W,</span>
+              <span *ngIf="item.thur && item.thur !== 0 ">R,</span>
+              <span *ngIf="item.fri && item.fri !== 0 ">F,</span>
+              <span *ngIf="item.sat && item.sat !== 0 ">S,</span>
+              <span *ngIf="item.sun && item.sun !== 0 ">U</span>
+            </span>
+          </span>
+          <span class="rowItems" *ngIf="items" style=" text-align: left; font-weight: bold; ">
+            Type: {{items['crewType']}}
+          </span>
+          <span class="rowItems" *ngIf="items" style=" text-align: left; font-weight: bold; ">
+            TruckID: T-{{items['truckId']}}
+          </span>
+          <br>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI !== 0 && item.mon">
+              <span *ngFor="let time of item.mon">
+                <span *ngIf="time">
+                  <mat-icon (click)="removeItems(rowI,tdI,'mon')" *ngIf="items">clear</mat-icon>
+                  {{ time }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,'mon',time,items)"
+                    *ngIf="items">edit
+                  </mat-icon>
+                </span>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon *ngIf="items" (click)="editItems('','','','','')">add</mat-icon>
+          </span>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI !== 0 && item.tues">
+              <span *ngFor="let time of item.tues">
+                <span *ngIf="time">
+                  <mat-icon (click)="removeItems(rowI,tdI,'tues')" *ngIf="items">clear</mat-icon>
+                  {{ time }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,'tues', time,items)"
+                    *ngIf="items">edit
+                  </mat-icon>
+                </span>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon *ngIf="items" (click)="editItems('','','','','')">add</mat-icon>
+          </span>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI !== 0 && item.wed">
+              <span *ngFor="let time of item.wed">
+                <span *ngIf="time">
+                  <mat-icon (click)="removeItems(rowI,tdI,'wed')" *ngIf="items">clear</mat-icon>
+                  {{ time }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,'wed', time,items)"
+                    *ngIf="items">edit
+                  </mat-icon>
+                </span>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon *ngIf="items" (click)="editItems('','','','','')">add</mat-icon>
+          </span>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI !== 0 && item.thur">
+              <span *ngFor="let time of item.thur">
+                <span *ngIf="time">
+                  <mat-icon (click)="removeItems(rowI,tdI,'thur')" *ngIf="items">clear</mat-icon>
+                  {{ time }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,'thur',time,items)"
+                    *ngIf="items">edit
+                  </mat-icon>
+                </span>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon *ngIf="items" (click)="editItems('','','','','')">add</mat-icon>
+          </span>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI !== 0 && item.fri">
+              <span *ngFor="let time of item.fri">
+                <span *ngIf="time">
+                  <mat-icon (click)="removeItems(rowI,tdI,'fri')" *ngIf="items">clear</mat-icon>
+                  {{ time }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,'fri',time,items)"
+                    *ngIf="items">edit
+                  </mat-icon>
+                </span>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon *ngIf="items" (click)="editItems('','','','','')">add</mat-icon>
+          </span>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI !== 0 && item.sat !== 0">
+              <span *ngFor="let time of item.sat">
+                <span *ngIf="time">
+                  <mat-icon (click)="removeItems(rowI,tdI,'sat')" *ngIf="items">clear</mat-icon>
+                  {{ time }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,'sat',time,items)"
+                    *ngIf="items">edit
+                  </mat-icon>
+                </span>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon *ngIf="items" (click)="editItems('','','','','')">add</mat-icon>
+          </span>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI !== 0 && item.sun">
+              <span *ngFor="let time of item.sun">
+                <span *ngIf="time">
+                  <mat-icon (click)="removeItems(rowI,tdI,'sun')" *ngIf="items">clear</mat-icon>
+                  {{ time }}<mat-icon class="material-icons md-5" (click)="editItems(rowI,tdI,'sun',time,items)"
+                    *ngIf="items">edit
+                  </mat-icon>
+                </span>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon *ngIf="items" (click)="editItems('','','','','')">add</mat-icon>
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table><br><br><br>
+</div>
