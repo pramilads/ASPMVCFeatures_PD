@@ -1,0 +1,311 @@
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { LoadingModalComponent } from './shared/components/loading-modal/loading-modal.component';
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'; // to use ngModel
+import { HttpClientModule } from '@angular/common/http';
+import { NgbActiveModal, NgbModule, NgbDateAdapter, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { Routes } from './app-routing.module';
+import { NgxSpinnerModule } from 'ngx-spinner';
+import { DatePipe } from '@angular/common'
+import { NgSelectModule } from '@ng-select/ng-select';
+
+import { MatMomentDateModule, MAT_MOMENT_DATE_ADAPTER_OPTIONS } from '@angular/material-moment-adapter';
+
+// components
+import { AppComponent } from './app.component';
+import { MasterComponent } from './components/master/master.component';
+import { WorkforceComponent } from './components/workforce/workforce.component';
+import { WorkloadComponent } from './components/workload/workload.component';
+import { SchedulerComponent } from './components/scheduler/scheulder.component';
+import { RouteSheetComponent } from './components/route-sheet/route-sheet.component';
+import { CrewInfoComponent } from './components/workforce/crew-info/crew-info.component';
+import { OrderListComponent } from './components/workload/order-list/order-list.component';
+import { CrewCompositionComponent } from './components/workforce/crew-composition/crew-composition.component';
+
+//popups
+import { EmployeeEditComponent } from './components/workforce/employee-edit/employee-edit.component';
+import { OrderEditComponent } from './components/workload/order-edit/order-edit.component';
+import { MapCrewOrderComponent } from './components/scheduler/map-crew-orders/map-crew-order.component';
+import { CrewWorkEventComponent } from './components/workforce/crew-work-event/crew-work-event.component';
+
+// services
+import { CustomDateAdapter, CustomDateParserFormatter } from './core/services/datepicker.service';
+
+// pipes
+import { FilterByDropDownNamePipe } from './shared/pipes/ddlfilter.pipe';
+import { NgbdSortableHeader } from './shared/directives/sort.directive';
+import { LocalBusyDirective } from './shared/directives/local-busy.directive';
+
+//Prime-NG
+import { AutoCompleteModule } from 'primeng-lts/autocomplete';
+import { MultiSelectModule } from 'primeng-lts/multiselect';
+
+// Ng Material 
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTableModule } from '@angular/material/table';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+// import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { MatSortModule } from '@angular/material/sort';
+import { MatDialogModule } from '@angular/material/dialog';
+import { NativeDateModule } from '@angular/material/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+
+// import { MultiSelectModule} from 'primeng/multiselect';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    MasterComponent,
+    WorkforceComponent,
+    WorkloadComponent,
+    SchedulerComponent,
+    RouteSheetComponent,
+    CrewInfoComponent,
+    EmployeeEditComponent,
+    OrderListComponent,
+    OrderEditComponent,
+    MapCrewOrderComponent,
+    LoadingModalComponent,
+    CrewCompositionComponent,
+
+    // pipes
+    FilterByDropDownNamePipe,
+
+    // directives
+    NgbdSortableHeader,
+    LocalBusyDirective,
+    CrewWorkEventComponent
+  ],
+  imports: [
+    NgSelectModule,
+    BrowserModule,
+    RouterModule,
+    RouterModule.forRoot(Routes),
+    BrowserAnimationsModule,
+    FormsModule, ReactiveFormsModule,
+    HttpClientModule,
+    NgbModule,
+    DragDropModule,
+    MultiSelectModule,
+    MatCheckboxModule, MatButtonModule, MatPaginatorModule, MatIconModule, MatTableModule, MatInputModule, MatFormFieldModule,
+    MatDatepickerModule,
+    MatNativeDateModule, MatSelectModule,
+    AutoCompleteModule, // autocomplete support
+
+    MatMomentDateModule, MatSortModule, NgxSpinnerModule, MatDialogModule, NativeDateModule, MatTooltipModule
+  ],
+  exports: [
+    LocalBusyDirective, MatSortModule
+  ],
+  entryComponents: [
+    EmployeeEditComponent
+  ],
+  providers: [
+    NgbActiveModal,
+    { provide: NgbDateAdapter, useClass: CustomDateAdapter },
+    { provide: NgbDateParserFormatter, useClass: CustomDateParserFormatter },
+    { provide: MAT_MOMENT_DATE_ADAPTER_OPTIONS, useValue: { useUtc: true } },
+    FilterByDropDownNamePipe, DatePipe
+  ],
+  bootstrap: [AppComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+})
+export class AppModule { }
+
+
+-------------------------------
+
+
+import { environment } from './../../../environments/environment';
+import { BusyService } from './../../shared/services/busy.service';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, Subject } from 'rxjs';
+import { finalize, map } from 'rxjs/operators';
+import { OrdersToSchedule, User } from './../../shared/models/search.model';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class SchedulerService {
+  expandSearch = true;
+  tabName: string;
+  username: string;
+  //shared properties
+  mapToCrew: any = null;
+  // showLoadingIndicator = new Subject<any>();
+  formCrewSubject = new Subject<any>();
+  selectedCrewMembers: any = [];
+
+  constructor(
+    private httpClient: HttpClient,
+    private busyService: BusyService
+  ) { }
+
+  getDropdownData(tabName): Observable<any> {
+    return this.httpClient.get<any>(
+      environment.baseUrl + `workforce/getDropdownData?tabName=${tabName}`, { withCredentials: true }
+    );
+  }
+
+  getCrewType(): Observable<any> {
+    return this.httpClient.get(environment.baseUrl + `workforce/getCrewType`,
+      { withCredentials: true }
+    );
+  }
+
+  GetCrewTypes(): Observable<any> {
+    return this.httpClient.get(environment.baseUrl + `workforce/getCrewTypes`,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * Method to get crew information
+   * @returns void
+   */
+  getCrewInfo(searchModel): Observable<any> {
+    return this.httpClient.get<any>(
+      environment.baseUrl + `workforce/getCrewInfo`,
+      { params: searchModel, withCredentials: true }
+    );
+    // return this.httpClient.get('assets/mockdata/employeeData.json');
+  }
+
+  getOrdersData(searchModel): Observable<any> {
+    // this.showLoadingIndicator.next(true);
+    return this.httpClient.get<any>(
+      environment.baseUrl + 'workload/getorderdetails',
+      { params: searchModel, withCredentials: true }
+    );
+    // .pipe(
+    //   map((r) => {
+    //     return r;
+    //   })
+    // )
+    //  .pipe(finalize(() => this.showLoadingIndicator.next(false)));
+    //return this.httpClient.get('assets/mockdata/orderData.json');
+  }
+
+  /**
+   * Method to update the order details
+   * @param orderDetailsUpdateRequest
+   */
+  updateOrderDetails(orderDetailsUpdateRequest): Observable<any> {
+    return this.httpClient.post(
+      environment.baseUrl + 'workload/updateorderdetails',
+      orderDetailsUpdateRequest
+    );
+  }
+
+  saveOrderDetails(orderDetailSaveRequest) {
+    return this.httpClient.post(
+      environment.baseUrl + 'workload/saveorderdetails',
+      orderDetailSaveRequest
+    );
+  }
+
+  getOrdersForScheduling(searchModel): Observable<any> {
+    return this.httpClient.get(
+      environment.baseUrl + 'workload/getorderdetails',
+      { params: searchModel, withCredentials: true },
+    );
+    //return this.httpClient.get('assets/mockdata/orderData.json');
+  }
+
+  getCrewsForScheduling(searchModel): Observable<any> {
+    return this.httpClient.get('assets/mockdata/crewData.json');
+  }
+
+  updateCrewInfo(crewInfoUpdateRequest): Observable<any> {
+    return this.httpClient.post(
+      environment.baseUrl + 'workforce/updatecrewinfo',
+      crewInfoUpdateRequest
+    );
+  }
+
+  updateCrewCompositionInfo(crewCompInfoUpdateRequest): Observable<any> {
+    return this.httpClient.post(
+      environment.baseUrl + 'workforce/updatecrewcompositioninfo',
+      crewCompInfoUpdateRequest
+    );
+  }
+
+  /**
+   * Methods for WORK FORCE Tab
+   */
+
+  saveFormCrewInfo(FormCrewRequest): Observable<any> {
+    return this.httpClient.post(
+      environment.baseUrl + 'workforce/formcrew',
+      FormCrewRequest, { withCredentials: true }
+    );
+  }
+
+  getExistingCrews(GetEmployeeTypeByCrewModel): Observable<any> {
+    return this.httpClient.get(
+      environment.baseUrl + 'workforce/getExistingCrews',
+      { params: GetEmployeeTypeByCrewModel, withCredentials: true }
+    );
+  }
+
+  deleteCrewEvent(deleteCrewEventRequest): Observable<any> {
+    return this.httpClient.put(
+      environment.baseUrl + 'workforce/deleteCrewEvent',
+      deleteCrewEventRequest
+    );
+  }
+
+  deleteCrew(deleteCrewRequest): Observable<any> {
+    return this.httpClient.put(
+      environment.baseUrl + 'workforce/deleteCrew',
+      deleteCrewRequest
+    );
+  }
+
+  addUpdateCrew(addUpdateCrewRequest) {
+    return this.httpClient.put(
+      environment.baseUrl + 'workforce/addUpdateCrew',
+      addUpdateCrewRequest, { withCredentials: true }
+    );
+  }  
+
+  addUpdateCrewEvent(addUpdateCrewEventRequest) {
+    return this.httpClient.put(
+      environment.baseUrl + 'workforce/addUpdateCrewEvent',
+      addUpdateCrewEventRequest, { withCredentials: true }
+    );
+  }  
+
+  /**
+   * Method to get Work management center details
+   */
+  getWorkManagementCenterDetails(): Observable<any> {
+    return this.httpClient.get(environment.baseUrl + 'workforce/getwmcdetails');
+  }
+
+  getScheduledCrews() {
+    return this.httpClient.get('assets/mockdata/routeSheetData.json');
+  }
+
+  saveOrdersForScheduling(ordersSelectedForScheduling) {
+    return this.httpClient.post(
+      environment.baseUrl + 'workload/saveordersforscheduling',
+      ordersSelectedForScheduling
+    );
+  }
+
+  validateUser(): Observable<any> {
+    return this.httpClient.get<User>(environment.baseUrl + 'Auth/validate', { withCredentials: true });
+  }
+}
