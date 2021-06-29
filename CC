@@ -1,0 +1,526 @@
+<div *ngIf="showCrewCompostionTableData()">
+
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>Crew</th>
+        <th width="140px">Mon</th>
+        <th width="140px">Tue</th>
+        <th width="140px">Wed</th>
+        <th width="140px">Thur</th>
+        <th width="140px">Fri</th>
+        <th width="140px">Sat</th>
+        <th width="140px">Sun</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let items of selectedCrewLeadData; let rowI = index">
+        <td style="vertical-align: top;" *ngIf="items">
+          <mat-icon class="size-12" style="align-self:top; color: red;" class="material-icons md-2"
+            (click)="deleteCrew(items[0],rowI)" *ngIf="items">delete
+          </mat-icon>
+          <!-- <mat-icon class="size-12" style="align-self:top; color: red;" class="material-icons md-2"
+            (click)="addUpdateCrew(items[0],rowI)" *ngIf="items">edit
+          </mat-icon> -->
+        </td>
+
+        <td style="min-width: 230px;vertical-align: top;" *ngIf="items">
+          <span class="rowItems {{customStyle(tdI)}}" style="text-align: left; font-weight: bold;">
+            {{ items[0]['employee_Name'] }}
+          </span>
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems {{customStyle(tdI)}}" *ngIf="tdI !== 0" style="text-align: right;">
+              {{ item.employee_Name }}:
+              <span *ngIf="items[0].mondayShiftDetails">{{checkDay('M',items[0].mondayShiftDetails)}}</span>
+              <span *ngIf="items[0].tuesdayShiftDetails">{{checkDay('T',items[0].tuesdayShiftDetails)}}</span>
+              <span *ngIf="items[0].wednesdayShiftDetails">{{checkDay('W',items[0].wednesdayShiftDetails)}}</span>
+              <span *ngIf="items[0].thursdayShiftDetails">{{checkDay('R',items[0].thursdayShiftDetails)}}</span>
+              <span *ngIf="items[0].fridayShiftDetails">{{checkDay('F',items[0].fridayShiftDetails)}}</span>
+              <span *ngIf="items[0].saturdayShiftDetails">{{checkDay('S',items[0].saturdayShiftDetails)}}</span>
+              <span *ngIf="items[0].sundayShiftDetails">{{checkDay('U',items[0].sundayShiftDetails)}}</span>
+            </span>
+          </span>
+          <span class="rowItems" *ngIf="items" style=" text-align: left; font-weight: bold; ">
+            <!-- FOR TESTING ADDED CREW-ID -->
+            <!-- CREW-ID: {{items[0]['crewId']}} -->
+            <br> Type: {{items[0]['crew_Type']}}
+          </span>
+          <span class="rowItems" *ngIf="items" style=" text-align: left; font-weight: bold;word-wrap: inherit; ">
+            TruckID: {{items[0]['truck_Name']}}
+          </span>
+          <span class="rowItems" *ngIf="items" style=" text-align: left; font-weight: bold; ">
+            WMC: {{items[0]['wmc_Name']}}
+          </span>
+          <span class="rowItems" *ngIf="items" style=" text-align: left; font-weight: bold;word-wrap: inherit; ">
+            Headquarter: {{items[0]['headquarters_Name']}}
+          </span>
+          <br>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI == 0 && item.mondayShiftDetails">
+              <span *ngFor="let time of  item.mondayShiftDetails">
+                <mat-icon class="material-icons md-5" (click)="deleteCrewEvent(rowI,tdI,'mondayShiftDetails', time)"
+                  *ngIf="items">
+                  clear
+                </mat-icon>
+                {{ time.time }}
+                <!-- FOR TESTING ADDED CrewEventID -->
+                <!-- -  {{ time.CrewEventID }} -->
+                <mat-icon class="material-icons md-5"
+                  (click)="addUpdateCrewEvent(rowI,tdI,'mondayShiftDetails',time,items,'edit')" *ngIf="items">
+                  edit</mat-icon>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon class="material-icons md-5" *ngIf="items" (click)="addUpdateCrewEvent(rowI,'','','', items,'add')">add</mat-icon>
+          </span>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI == 0 && item.tuesdayShiftDetails">
+              <span *ngFor="let time of  item.tuesdayShiftDetails">
+                <mat-icon class="material-icons md-5" (click)="deleteCrewEvent(rowI,tdI,'tuesdayShiftDetails', time)"
+                  *ngIf="items">
+                  clear
+                </mat-icon>
+                {{ time.time }}
+                <!-- FOR TESTING ADDED CrewEventID -->
+                <!-- -  {{ time.CrewEventID }} -->
+                <mat-icon class="material-icons md-5"
+                  (click)="addUpdateCrewEvent(rowI,tdI,'tuesdayShiftDetails', time,items,'edit')" *ngIf="items">
+                  edit
+                </mat-icon>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon class="material-icons md-5" *ngIf="items" (click)="addUpdateCrewEvent(rowI,'','','', items,'add')">add</mat-icon>
+          </span>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI == 0 && item.wednesdayShiftDetails">
+              <span *ngFor="let time of  item.wednesdayShiftDetails">
+                <mat-icon class="material-icons md-5" (click)="deleteCrewEvent(rowI,tdI,'wednesdayShiftDetails', time)"
+                  *ngIf="items">clear
+                </mat-icon>
+                {{ time.time }}
+                <!-- FOR TESTING ADDED CrewEventID -->
+                <!-- -  {{ time.CrewEventID }} -->
+                <mat-icon class="material-icons md-5"
+                  (click)="addUpdateCrewEvent(rowI,tdI,'wednesdayShiftDetails', time,items,'edit')" *ngIf="items">
+                  edit
+                </mat-icon>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon class="material-icons md-5" *ngIf="items" (click)="addUpdateCrewEvent(rowI,'','','', items,'add')">add</mat-icon>
+          </span>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI == 0 && item.thursdayShiftDetails ">
+              <span *ngFor="let time of  item.thursdayShiftDetails">
+                <mat-icon class="material-icons md-5" (click)="deleteCrewEvent(rowI,tdI,'thursdayShiftDetails' , time)"
+                  *ngIf="items">clear
+                </mat-icon>
+                {{ time.time }}
+                <!-- FOR TESTING ADDED CrewEventID -->
+                <!-- -  {{ time.CrewEventID }} -->
+                <mat-icon class="material-icons md-5"
+                  (click)="addUpdateCrewEvent(rowI,tdI,'thursdayShiftDetails ',time,items,'edit')" *ngIf="items">
+                  edit
+                </mat-icon>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon class="material-icons md-5" *ngIf="items" (click)="addUpdateCrewEvent(rowI,'','','', items,'add')">add</mat-icon>
+          </span>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI == 0 && item.fridayShiftDetails">
+              <span *ngFor="let time of  item.fridayShiftDetails">
+                <mat-icon class="material-icons md-5" (click)="deleteCrewEvent(rowI,tdI,'fridayShiftDetails' , time)"
+                  *ngIf="items">
+                  clear
+                </mat-icon>
+                {{ time.time }}
+                <!-- FOR TESTING ADDED CrewEventID -->
+                <!-- -  {{ time.CrewEventID }} -->
+                <mat-icon class="material-icons md-5"
+                  (click)="addUpdateCrewEvent(rowI,tdI,'fridayShiftDetails',time,items,'edit')" *ngIf="items">
+                  edit
+                </mat-icon>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon class="material-icons md-5" *ngIf="items" (click)="addUpdateCrewEvent(rowI,'','','', items,'add')">add</mat-icon>
+          </span>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI == 0 && item.saturdayShiftDetails">
+              <span *ngFor="let time of  item.saturdayShiftDetails">
+                <mat-icon class="material-icons md-5" (click)="deleteCrewEvent(rowI,tdI,'saturdayShiftDetails' , time)"
+                  *ngIf="items">clear
+                </mat-icon>
+                {{ time.time }}
+                <!-- FOR TESTING ADDED CrewEventID -->
+                <!-- -  {{ time.CrewEventID }} -->
+                <mat-icon class="material-icons md-5"
+                  (click)="addUpdateCrewEvent(rowI,tdI,'saturdayShiftDetails',time,items,'edit')" *ngIf="items">
+                  edit
+                </mat-icon>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon class="material-icons md-5" *ngIf="items" (click)="addUpdateCrewEvent(rowI,'','','', items,'add')">add</mat-icon>
+          </span>
+        </td>
+
+        <td *ngIf="items">
+          <span *ngFor="let item of items; let tdI = index">
+            <span class="rowItems" *ngIf="tdI == 0 && item.sundayShiftDetails">
+              <span *ngFor="let time of  item.sundayShiftDetails">
+                <mat-icon class="material-icons md-5" (click)="deleteCrewEvent(rowI,tdI,'sundayShiftDetails', time)"
+                  *ngIf="items">
+                  clear
+                </mat-icon>
+                {{ time.time }}
+                <!-- FOR TESTING ADDED CrewEventID -->
+                <!-- -  {{ time.CrewEventID }} -->
+                <mat-icon class="material-icons md-5"
+                  (click)="addUpdateCrewEvent(rowI,tdI,'sundayShiftDetails',time,items, 'edit')" *ngIf="items">
+                  edit
+                </mat-icon>
+              </span>
+            </span>
+          </span>
+          <span class="addSpan">
+            <mat-icon class="material-icons md-5" *ngIf="items" (click)="addUpdateCrewEvent(rowI,'','','', items, 'add')">add</mat-icon>
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table><br><br><br>
+</div>
+
+-------------------------
+
+import { SchedulerService } from 'src/app/core/services/scheduler.service';
+import { Component, Input, Output, EventEmitter, SimpleChanges } from '@angular/core';
+import { SelectionModel } from '@angular/cdk/collections';
+import { DatePipe } from '@angular/common';
+import { NgxSpinnerService } from 'ngx-spinner';
+
+import {
+  NgbModal,
+  NgbModalOptions,
+  ModalDismissReasons,
+} from '@ng-bootstrap/ng-bootstrap';
+
+import { CrewWorkEventComponent } from '../crew-work-event/crew-work-event.component';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+
+export interface PeriodicElement {
+  employeeTypeId: number;
+  headquarter: string;
+  id: number;
+  employeeName: string;
+  employeeType: string;
+  Status: string;
+  mon: string;
+  tues: string;
+  wed: string;
+  thur: string;
+  fri: string;
+  sat: string;
+  sun: string;
+}
+
+@Component({
+  selector: 'crew-composition',
+  templateUrl: './crew-composition.component.html'
+})
+
+export class CrewCompositionComponent {
+  DateFrom: any = new Date();
+  dropDownData: any;
+  crewTypeList = [];
+
+  @Input() allCrewList: any;
+  @Input() data: any;
+  @Input() crewList: any = [];
+  @Input() allEmployees: any;
+
+  allEmps = [];
+  selectedCrewLeadData = [];
+  lstCrew: any = [];
+  displayCrewComposition: boolean = false;
+  displayCrewCompostionTable = false;
+  username = localStorage.getItem('username');
+
+
+  @Output() outputEmployeeList = new EventEmitter<any>();
+
+  dataSource = new MatTableDataSource<PeriodicElement>();
+  tableDataSource = new MatTableDataSource<any>();
+  selection = new SelectionModel<PeriodicElement>(true, []);
+
+  constructor(private modalService: NgbModal, private schedulerService: SchedulerService, private datePipe: DatePipe,
+    private spinner: NgxSpinnerService, private dialog: MatDialog) {
+  }
+
+  ngOnInit() {
+    this.getCrewTypesForDropDowns();
+
+    this.selectedCrewLeadData = this.data;
+    this.displayCrewCompostionTable = true;
+    this.allEmps = this.allEmployees;
+
+    // this.schedulerService.formCrewSubject.subscribe(() => {
+    //   this.displayCrewComposition = true;
+    //   this.lstCrew.push(this.schedulerService.selectedCrewMembers);
+    //   this.schedulerService.selectedCrewMembers = [];
+    // });
+  }
+
+  private getDismissReason(reason: any): string {
+    if (reason === ModalDismissReasons.ESC) {
+      return 'by pressing ESC';
+    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
+      return 'by clicking on a backdrop';
+    } else {
+      return `with: ${reason}`;
+    }
+  }
+
+  showCrewCompostionTableData() {
+    if (this.displayCrewCompostionTable && this.selectedCrewLeadData.length > 0) { return true }
+  }
+
+  // addUpdateCrew
+  editCrew(getObj, index) {
+    let obj = {
+      "UserID": this.username,
+      "CrewId": getObj.crew_Id
+    }
+    // this.spinner.show();
+    this.schedulerService.addUpdateCrew(obj).subscribe(
+      (res) => {
+        console.log("res.." + JSON.stringify(res));
+        // if (this.selectedCrewLeadData.length !== 0) {
+        //   let del = this.selectedCrewLeadData.splice(index, 1);
+        //   this.displayCrewCompostionTable = true;
+        // } else {
+        //   this.selectedCrewLeadData = [];
+        //   this.displayCrewCompostionTable = false;
+        // }
+        // this.spinner.hide();
+      }
+    );
+  }
+
+  deleteCrew(getObj, index) {
+
+    console.log("getObj.." + JSON.stringify(getObj));
+    this.displayCrewCompostionTable = false;
+
+    let obj = {
+      "UserID": this.username,
+      "CrewId": getObj.crew_Id
+    }
+    this.spinner.show();
+
+    this.schedulerService.deleteCrew(obj).subscribe(
+      (res) => {
+        console.log("res.." + JSON.stringify(res));
+        if (this.selectedCrewLeadData.length !== 0) {
+          let del = this.selectedCrewLeadData.splice(index, 1);
+          this.displayCrewCompostionTable = true;
+        } else {
+          this.selectedCrewLeadData = [];
+          this.displayCrewCompostionTable = false;
+        }
+        this.spinner.hide();
+      }
+    );
+  }
+
+  deleteCrewEvent(arrIndex, tdIndex, key, val) {
+
+    let obj = {
+      "UserID": this.username,
+      "CrewEventID": val['CrewEventID']
+    }
+    this.spinner.show();
+
+    this.schedulerService.deleteCrewEvent(obj).subscribe(
+      (res) => {
+        console.log("res.." + JSON.stringify(res));
+        this.spinner.hide();
+      }
+    );
+    this.selectedCrewLeadData[arrIndex][tdIndex][key] = "";
+
+  }
+
+  getCrewTypesForDropDowns() {
+    this.schedulerService.GetCrewTypes().subscribe(
+      (res) => {
+        this.dropDownData = res.dropdownDetails;
+        res['dropdownDetails'].map(obj => {
+          this.crewTypeList.push(obj);
+        })
+      }
+    );
+  }
+
+  // Edit and Add Crew Events
+  addUpdateCrewEvent(arrIndex, tdIndex, key, time, items, dialogTitle) {
+    var getObj = {};
+
+    console.log(JSON.stringify(items));
+
+    if (time !== '' && time.time) {
+      var timeList = time.time.split('-');
+
+      getObj['startTime'] = timeList[0];
+      getObj['toTime'] = timeList[1];
+      getObj['CrewEventID'] = time.CrewEventID;
+    }
+
+    if (arrIndex !== '') {
+      getObj['crew_Member_Name'] = items[0]['employee_Name'];
+      getObj['crewType'] = items[0]['crew_Type'];
+      getObj['truckId'] = items[0]['truck_Name'];
+      getObj['crewLeadName'] = items[0]['employee_Name'];
+      getObj['headquarter'] = items[0]['headquarters_Name'];
+
+      getObj['Plant_ID'] = items[0]['headquarters_Id'];
+      getObj['wmc_Name'] = items[0]['wmc_Name'];
+      getObj['allCrewList'] = this.allCrewList;
+
+      getObj['employeeList'] = [];
+      getObj['crewTypeList'] = this.crewTypeList;
+      getObj['allEmployees'] = this.allEmployees;
+      getObj['crewId'] = items[0]['crewId'];
+      getObj['crewLeadId'] = items[0]['employee_Id'];
+
+      this.selectedCrewLeadData[arrIndex].map((item, index) => {
+        if (index !== 0) {
+          let empObj = {
+            label: item.employee_Name,
+            value: item.employee_Name
+          }
+          getObj['employeeList'].push(empObj);
+        }
+      })
+    }
+    if (dialogTitle === 'edit') {
+      dialogTitle = 'Edit Work Event';
+    }
+    else {
+      dialogTitle = 'Add Work Event';
+    }
+
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.disableClose = true;
+    dialogConfig.autoFocus = true;
+    dialogConfig.width = '800px';
+    dialogConfig.height = '650px';
+    dialogConfig.data = {
+      id: 1,
+      type: 'edit',
+      title: dialogTitle,
+      formData: getObj,
+    };
+    const confirmDialog = this.dialog.open(CrewWorkEventComponent, dialogConfig);
+    confirmDialog.afterClosed().subscribe(result => {
+      if (result) {
+        this.spinner.show();
+        this.addEditCrewEvent(result['data']);
+      }
+    });
+  }
+
+  addEditCrewEvent(data) {
+    this.schedulerService.addUpdateCrewEvent(data).subscribe(
+      (res) => {
+        this.spinner.hide();
+        console.log(res);
+      }
+    )
+  }
+
+
+  async patchData(arrInd, tdI, key, data) {
+    // let hrs = data.toTime - data.fromTime;
+    let totHrs: any;
+    // var time_start = new Date();
+    // var time_end = new Date();
+    var value_start = data.fromTime.split(':');
+    var value_end = data.toTime.split(':');
+
+    // time_start.setHours(value_start[0], value_start[1], 0, 0)
+    // time_end.setHours(value_end[0], value_end[1], 0, 0)
+
+    //  (time_end) - (time_start)
+    // let frmTme = time_start.getTime();
+    // let toTme = time_end.getTime();
+    totHrs = Number(value_end[0]) - Number(value_start[0]);
+    // let totDay = Math.floor(totHrs / 1000 % 60)
+
+    // console.log(time_start , time_end)
+
+    // let Days = ['sun', 'mon', 'tues', 'wed', 'thur', 'fri', 'sat'];
+    let timeVal = "";
+    timeVal = totHrs.toString() + " (" + data.fromTime + "-" + data.toTime + ")"
+    console.log(this.selectedCrewLeadData);
+    this.selectedCrewLeadData[arrInd][tdI][key] = timeVal;
+    // await this.apiService.editData(url, data).subscribe(
+    //   (res) => {
+    //     this.loadRows();
+    //   }
+    // )
+  }
+
+  valSecData(getValue) {
+    var value = getValue.split("</n>")
+    return value;
+  }
+
+  validateData(getValue) {
+    var value = getValue.replace(/<\/n>/g, "")
+    return value;
+  }
+
+  customStyle(index) {
+    let style = "paddingBottom marginBottom"
+    if (index === 0) { return style }
+  }
+
+
+  checkDay(key, val) {
+    let str = key + ",";
+
+    if (val.length !== 0 && val[0] !== "") {
+      return str;
+    }
+  }
+}
