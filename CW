@@ -1,0 +1,508 @@
+<div *ngIf="showEditForm">
+  <h1 mat-dialog-title style="text-align: center;">{{description}}</h1>
+  <mat-dialog-content style="max-height: 90vh;">
+    <br>
+    <div [formGroup]="editDicomForm">
+      <div class="formControl" style="width: 93%;border-bottom: 1px solid blue;">
+        <label>
+          <mat-icon class="material-icons md-5">public</mat-icon>
+        </label>
+        {{sourceObj.formData.crew_Member_Name}}
+      </div><br>
+
+      <div class="formControl" style="display:inline-flex; padding-bottom: 15px;">
+        <mat-icon>person_outline</mat-icon>
+        <div style="width: 90%;">
+          <p-autoComplete [(ngModel)]="selectedEmployees" [suggestions]="filteredEmployees" formControlName="employees"
+            (completeMethod)="filterEmployee($event)" field="value" [multiple]="true">
+          </p-autoComplete>
+        </div>
+      </div>
+
+      <div style="width: 90%;display: inline-flex;">
+        <div class="formControl" style="width: 50%;display: inline-flex;">
+          <mat-icon>access_time</mat-icon>
+          <mat-form-field appearance="fill" style="width: 90%;">
+            <input matInput [matDatepicker]="picker" placeholder="Choose a date" [(ngModel)]="crewDate"
+              formControlName="shiftDate">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </div>
+        <div class="formControl" style="width: 25%;display: inline-flex;">
+          <mat-icon>clear</mat-icon>
+          <mat-form-field appearance="fill" style="width: 90%;">
+            <mat-label>Select Time</mat-label>
+            <input matInput id="appt-time-from" type="time" [(ngModel)]="sTime" formControlName="fromTime">
+          </mat-form-field>
+        </div>
+        <div class="formControl" style="width: 25%;display: inline-flex;">
+          <mat-icon>clear</mat-icon>
+          <mat-form-field appearance="fill" style="width: 100%;">
+            <mat-label>Select Time</mat-label>
+            <input matInput id="appt-time-to" type="time" [(ngModel)]="tTime" formControlName="toTime">
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="formControl" *ngIf="crewType!==''">
+        <mat-icon>cached</mat-icon>
+        <mat-form-field appearance="fill" style="width: 90%;">
+          <mat-label>Crew Type</mat-label>
+          <mat-select [(ngModel)]="crewType" formControlName="crewType">
+            <mat-option *ngFor="let data of dropDownData " [value]="data.name">
+              {{data.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="formControl">
+        <mat-icon>cached</mat-icon>
+        <mat-form-field appearance="fill" style="width: 90%;">
+          <mat-label>Truck Name</mat-label>
+          <input matInput id="truckId" type="text" [(ngModel)]="sourceObj.formData.truckId" formControlName="truckId">
+        </mat-form-field>
+      </div>
+
+      <div class="formControl" style="width: 50%;display: inline-flex;">
+        <mat-icon>place</mat-icon>
+        <mat-form-field appearance="fill" style="width: 90%;">
+          <mat-label>WMC</mat-label>
+          <input matInput id="wmcid" [(ngModel)]="sourceObj.formData.wmc_Name" value="" formControlName="wmcid">
+        </mat-form-field>
+      </div>
+      <div class="formControl" style="width: 50%;display: inline-flex;">
+        <mat-icon></mat-icon>
+        <mat-form-field appearance="fill" style="width: 80%;">
+          <mat-label>Headquarters</mat-label>
+          <input matInput id="hqid" [(ngModel)]="sourceObj.formData.headquarter" value="" formControlName="hqid">
+        </mat-form-field>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <div mat-dialog-actions align="center">
+    <div class="row">
+      <div class="col text-center" mat-dialog-actions style="align-items: center;">
+        <button mat-button class="mat-raised-button mat-primary" class="btn btn-primary btn-sm mr-2"
+          (click)="addUpdateCrewEvent()">
+          <span class="material-icons">
+            save
+          </span>
+          Save</button>
+        <button mat-button class="mat-raised-button" class="btn btn-primary btn-sm mr-2" (click)="close()">
+          <span class="material-icons">
+            delete
+          </span>
+          Discard</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showDialog()">
+  <h1 mat-dialog-title style="text-align: center;">Add {{description}}</h1>
+  <mat-dialog-content>
+    <br>
+
+    <form [formGroup]="crewTypeForm">
+
+      <div class="form-group">
+        <mat-icon>cached</mat-icon>
+        <mat-form-field appearance="fill" style="width: 90%;">
+          <mat-label>Crew Type</mat-label>
+          <mat-select formControlName="crewType" required [(ngModel)]="modeselect"
+            (selectionChange)="onChange($event.value, 'crewType')">
+            <mat-option *ngFor="let data of dropDownData" [value]="data.name">
+              {{data.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <div *ngIf="crewTypeError" style="color: red;">
+          Crew Type is Required *
+        </div>
+      </div>
+
+      <div class="form-group">
+        <mat-icon>person_outline</mat-icon>
+        <mat-form-field appearance="fill" style="width: 90%;">
+          <mat-label>Crew Lead</mat-label>
+          <mat-select formControlName="crewLead" required [(ngModel)]="crewLeadSelected"
+            (selectionChange)="onChange($event.value, 'crewLead')">
+            <mat-option *ngFor="let emp of employeeData" [value]="emp.name">{{emp.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <div style="color: red;" *ngIf="crewLeadError">
+          Crew Lead is Required *
+        </div>
+      </div>
+
+      <div class="form-group">
+        <mat-icon>cached</mat-icon>
+        <mat-form-field appearance="fill" style="width: 90%;">
+          <mat-label>Truck Name</mat-label>
+          <input matInput id="truckId" placeholder="Truck ID" formControlName="truckId">
+          <!-- // WE MAY NEED FOR VALIDATION -->
+
+          <!-- <input matInput id="truckId" placeholder="Truck ID" formControlName="truckId"
+            (change)="onChange($event, 'truckId')"> -->
+        </mat-form-field>
+        <!-- // WE MAY NEED FOR VALIDATION -->
+
+        <!-- <div style="color: red;" *ngIf="truckIdError">
+          Truck Id is Required *
+        </div> -->
+      </div>
+
+      <div class="form-group">
+        <mat-icon>place </mat-icon>
+        <mat-form-field appearance="fill" style="width: 90%;">
+          <mat-label>Headquarter</mat-label>
+          <mat-select formControlName="selectedHQ" required (selectionChange)="onChange($event.value, 'selectedHQ')">
+            <mat-option *ngFor="let hq of headquaterList" [value]="hq">{{hq}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <div style="color: red;" *ngIf="headquarterError">
+          Headquarter is Required *
+        </div>
+      </div>
+
+    </form>
+
+  </mat-dialog-content>
+
+  <div mat-dialog-actions align="center">
+    <div class="row">
+      <div class="col text-center" mat-dialog-actions style="align-items: center;">
+        <button mat-button class="mat-raised-button mat-primary" class="btn btn-primary btn-sm mr-2"
+          (click)="saveFormCrewInfo()">
+          <span class="material-icons">
+            save
+          </span>
+          Save</button>
+        <button mat-button class="mat-raised-button" class="btn btn-primary btn-sm mr-2" (click)="close()">
+          <span class="material-icons">
+            delete
+          </span>
+          Discard</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+-----------------
+
+
+import { Component, OnInit, Inject, Input } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { SchedulerService } from 'src/app/core/services/scheduler.service';
+import { DatePipe } from '@angular/common'
+import { FilterByDropDownNamePipe } from 'src/app/shared/pipes/ddlfilter.pipe';
+import { MultiSelectModule } from 'primeng-lts/multiselect';
+import { AutoCompleteModule } from 'primeng-lts/autocomplete';
+
+@Component({
+  selector: 'app-crew-work-event',
+  templateUrl: './crew-work-event.component.html',
+})
+
+export class CrewWorkEventComponent implements OnInit {
+  @Input() public inputCrewInfo: any;
+  DateFrom: any = new Date();
+  crewDate: any = new Date();
+
+  username = localStorage.getItem('username');
+  workForceData = JSON.parse(localStorage.getItem('workforce'));
+  crewLeadData = {};
+  public modeselect = 'PLANNED';
+  crewLeadSelected = "";
+
+  selectedEmployees = [];
+  filteredEmployees = [];
+
+
+  description = "";
+  employees = [];
+  crewId = 0;
+  crewEventID = 0;
+  plantID = 0;
+  showEditForm: boolean = false;
+  showDialogForm: boolean = false;
+
+  selectedEmpCount = 0;
+  allCrewList = [];
+  employeeIDs = "";
+  selectedEmpIds = "";
+  employeeData = [];
+  sourceObj = {};
+  employeeList = [];
+  sTime = "";
+  tTime = "";
+  emp = [];
+  crewType = "";
+  crewLead = "";
+  crewLeadId: any = "";
+  headquarter = "";
+  headquarterId = "";
+  wmc = "";
+  crewTypeList: any = [];
+  headquaterList: any = [];
+  wmcList: any = [];
+  tempCrewType: any = []
+  tempHQList: any = [];
+  tempWMCList: any = [];
+  filterSelectObj = [];
+  dropDownData: any = [];
+  crewTypeId: any = "";
+
+  form: any;
+  editDicomForm = new FormGroup({
+    employees: new FormControl('', []),
+    shiftDate: new FormControl('', []),
+    fromTime: new FormControl('', []),
+    toTime: new FormControl('', []),
+    crewType: new FormControl('', []),
+    truckId: new FormControl('', []),
+    wmcid: new FormControl('', []),
+    hqid: new FormControl('', []),
+  });
+
+  crewTypeForm = new FormGroup({
+    crewType: new FormControl('', [Validators.required]),
+    crewLead: new FormControl('', [Validators.required]),
+    truckId: new FormControl(''),
+    selectedHQ: new FormControl('', [Validators.required]),
+  });
+
+  // truckIdError = false; // WE MAY NEED FOR VALIDATION
+  crewTypeError = false;
+  crewLeadError = false;
+  headquarterError = false;
+
+  constructor(private fb: FormBuilder, private dialog: MatDialog,
+    private datePipe: DatePipe,
+    private filterByDropDownNamePipe: FilterByDropDownNamePipe,
+    private schedulerService: SchedulerService,
+    public dialogRef: MatDialogRef<CrewWorkEventComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any) {
+    this.sourceObj = data;
+    this.description = data.title;
+    this.crewType = data.formData.crewType;
+    this.employeeList = data.formData.allEmployees;
+    this.selectedEmployees = data.formData.employeeList;
+    this.crewId = data.formData.crewId;
+    this.crewEventID = data.formData.CrewEventID;
+    this.plantID = data.formData.Plant_ID;
+
+    this.dropDownData = data.formData.crewTypeList;
+    this.crewTypeId = this.dropDownData[0]['id'];
+    if (data.formData.employeeData) {
+      this.employeeData = data.formData.employeeData;
+      this.crewLeadData = Object.assign({}, this.employeeData[0]);
+      this.crewLeadSelected = this.employeeData[0]['name'];
+    }
+    this.crewLeadId = data.formData.crewLeadId;
+    this.headquarterId = data.formData.headquarters_Id;
+    this.headquarter = data.formData.headquarter;
+    this.wmc = data.formData.wmc;
+
+    this.tempCrewType = Object.assign([], data.formData.crewTypeList);
+    this.tempHQList = Object.assign([], data.formData.HeadquaterList);
+    this.tempWMCList = Object.assign([], data.formData.WmcList);
+
+    if (data.formData.startTime && data.formData.toTime) {
+      this.sTime = data.formData.startTime;
+      this.tTime = data.formData.toTime;
+    }
+    else {
+      this.sTime = "00:00";
+      this.tTime = "00:00";
+    }
+    this.editDicomForm.value['employees'] = data.formData.employeeList;
+    this.crewLead = data.formData.employeeList[0];
+    this.allCrewList = data.formData.allCrewList;
+    if (data.type === "edit") {
+    }
+  }
+
+  ngOnInit(): void {
+    var workEventDate = JSON.parse(localStorage.getItem('workforce'));
+    this.DateFrom = this.datePipe.transform(workEventDate['DateFrom'], 'yyyy-MM-dd');
+
+    if (this.employeeData && this.employeeData.length > 0) {
+      this.employeeData.map(emp => {
+        this.employeeIDs += emp.id + ",";
+      })
+    }
+
+    var ct = this.removeDuplicates(this.tempCrewType);
+    this.crewTypeList = this.removeDuplicates(this.tempCrewType);
+    this.headquaterList = this.removeDuplicates(this.tempHQList);
+    this.wmcList = this.removeDuplicates(this.tempWMCList);
+
+    if (this.sourceObj['type'] === "dialog") {
+      this.showDialogForm = true;
+    }
+
+    // if (this.sourceObj['type'] === "edit") {
+    //   this.showEditForm = true;
+    // }
+
+    this.getEmployeesId(this.selectedEmployees);
+  }
+
+  filterEmployee(event) {
+    let filtered: any[] = [];
+    let query = event.query;
+    for (let i = 0; i < this.employeeList.length; i++) {
+      let employees = this.employeeList[i];
+      if (employees.value.toLowerCase().indexOf(query.toLowerCase()) == 0) {
+        let obj = {
+          label: employees.value,
+          value: employees.value
+        }
+        filtered.push(obj);
+      }
+    }
+
+    this.filteredEmployees = filtered;
+    this.getEmployeesId(this.selectedEmployees);
+  }
+
+  getEmployeesId(getEmpList) {
+    this.selectedEmpIds = "";
+    this.selectedEmpCount = 0;
+    for (let i = 0; i < getEmpList.length; i++) {
+      this.selectedEmpCount = i + 1;
+      this.matchEmployees(getEmpList[i].value);
+    }
+  }
+
+  matchEmployees(getName) {
+    console.log("this.allCrewList..." + this.allCrewList);
+    if (this.allCrewList && this.allCrewList.length > 0) {
+      this.allCrewList.map(emp => {
+        if (emp.name === getName)
+          this.selectedEmpIds += emp.id + ",";
+      })
+    }
+    if (this.sourceObj['type'] === "edit") {
+      this.showEditForm = true;
+    }
+  }
+
+  search(event) {
+    console.log('event', event);
+  }
+
+  removeDuplicates(array) {
+    var unique = array.filter(function (elem, index, self) {
+      return index === self.indexOf(elem);
+    })
+    return unique;
+  }
+
+  addUpdateCrewEvent() {
+    this.getEmployeesId(this.selectedEmployees);
+    console.log("this.selectedEmployees.." + this.selectedEmployees);
+    if (this.selectedEmployees.length === this.selectedEmpCount) {
+
+      console.log("this.crewDate.." + this.crewDate);
+      var dateChanged = new Date(this.crewDate + (3600 * 1000 * 24));
+      var formDate = this.datePipe.transform(dateChanged, "yyyy-MM-dd");
+      var startDateTime = formDate + " " + this.editDicomForm.value['fromTime'] + ":00.000";
+      var endDateTime = formDate + " " + this.editDicomForm.value['toTime'] + ":00.000";
+
+      var returnData = {};
+      returnData['data'] = {
+        "CrewEventID": this.crewEventID,
+        "CrewID": this.crewId,
+        "CrewLeadID": this.crewLeadId,
+        "CrewMembers": this.selectedEmpIds,
+        "StartDateTime": startDateTime,
+        "EndDateTime": endDateTime,
+        "CrewTypeID": this.crewTypeId,
+        "TruckID": this.editDicomForm.value['truckId'],
+        "Plant_ID": this.plantID,
+        "UserID": this.username,
+      };
+
+      returnData['formdata'] = this.editDicomForm.value;
+      // console.log("data..." + JSON.stringify(returnData));
+      this.dialogRef.close(returnData);
+    }
+  }
+
+  saveFormCrewInfo() {
+    if (//this.crewTypeForm.value['truckId'] !== "" &&  //  WE MAY NEED FOR VALIDATION
+      this.crewTypeForm.value['crewType'] !== ""
+      && this.crewTypeForm.value['crewLead'] !== "" && this.crewTypeForm.value['selectedHQ'] !== "") {
+
+      var returnData = {};
+      returnData['data'] = {
+        "foreman": this.crewLeadId,
+        "DateFrom": this.DateFrom,
+        "crew_type_id": this.crewTypeId,
+        "truck_name": this.crewTypeForm.value['truckId'],
+        "wmc_id": this.crewLeadData['wmcId'],
+        "plant_id": this.crewLeadData['headquarterId'],
+        "Energy_Type_Id": this.workForceData.EnergyTypeId,
+        "user": this.username,
+        "employee_ids": this.employeeIDs,
+        "HeadquarterId": this.workForceData.HeadquarterId,
+        "globalWmcIds": this.workForceData.WmcId,
+      };
+
+      returnData['formdata'] = this.crewTypeForm.value;
+
+      // console.log("data..." + JSON.stringify(returnData));
+      this.dialogRef.close(returnData);
+    }
+    else {
+      // if (this.crewTypeForm.value['truckId'] === "") { this.truckIdError = true; } // WE MAY NEED FOR VALIDATION
+      if (this.crewTypeForm.value['crewType'] === "") { this.crewTypeError = true; }
+      if (this.crewTypeForm.value['crewLead'] === "") { this.crewLeadError = true; }
+      if (this.crewTypeForm.value['selectedHQ'] === "") { this.headquarterError = true; }
+    }
+  }
+
+  onChange(val, key) {
+    if (key === "crewType" && val !== "") {
+      this.crewTypeError = false;
+
+      for (let obj of this.dropDownData) {
+        if (obj.name === val) {
+          this.crewTypeId = obj.id;
+        }
+      }
+    }
+
+    if (key === "crewLead" && val !== "") {
+      this.crewLeadError = false;
+      for (let empObj of this.employeeData) {
+        if (empObj.name === val) {
+          this.crewLeadId = empObj['id'];
+          this.crewLeadData = Object.assign({}, empObj);
+        }
+      }
+    }
+    //if (key === "truckId" && val !== "") { this.truckIdError = false; } // WE MAY NEED FOR VALIDATION
+    if (key === "selectedHQ" && val !== "") { this.headquarterError = false; }
+  }
+
+  close() {
+    this.dialogRef.close(false);
+  }
+
+  showDialog() {
+    if (this.showDialogForm && this.sourceObj['formData'].crewTypeList.length > 0
+      && this.sourceObj['formData'].TruckIdList.length > 0) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+}
+
