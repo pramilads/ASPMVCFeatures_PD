@@ -1,0 +1,298 @@
+import { Component } from '@angular/core';
+import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
+import { OrderSearchModel } from './../../shared/models/search.model';
+import { OrderCrewSearchModel, UpdatedHours } from './../../shared/models/search.model';
+import { SchedulerService } from './../../core/services/scheduler.service';
+import { MapCrewOrderComponent } from './map-crew-orders/map-crew-order.component';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { Subscription } from 'rxjs';
+import { FilterService } from 'src/app/shared/services/filter.service';
+
+import {CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
+
+
+
+@Component({
+  selector: 'scheduler',
+  templateUrl: './scheduler.component.html'
+})
+export class SchedulerComponent {
+  private subscription: Subscription;
+  orderSearchModel: OrderSearchModel;
+  displayCrewOrderInfo: boolean = false;
+  orderInfo: boolean = false;
+  allOrders: any = [];
+  lstOrder: any = [];
+  lstCrew: any = [];
+  orderStyle: any;
+  orderCrewSearchModel: OrderCrewSearchModel;
+  orderAndCrewInfo: any;
+  dropDownData: any;
+  updatedHours: UpdatedHours;
+
+  constructor(public schedulerService: SchedulerService, private modalService: NgbModal,
+    private spinner: NgxSpinnerService,   
+    private filterService: FilterService,) {
+  }
+
+  ngOnInit() {
+    this.orderSearchModel = new OrderSearchModel();
+
+    this.orderCrewSearchModel = new OrderCrewSearchModel();
+    this.getDataForDropDowns();
+
+
+    this.subscription = this.filterService.data.subscribe((data) => {
+      if (data && ( this.schedulerService?.tabName == 'scheduler' )) {
+        this.orderSearchModel.DateFrom = data.DateFrom;
+        this.orderSearchModel.DateTo = '4/11/2020';
+
+        this.orderSearchModel.WorkPeriod = data.WorkPeriod;
+        this.orderSearchModel.WmcId = this.parseHeadquarterAndWmcDetails(
+          data.WmcId
+        );
+        this.orderSearchModel.HeadquarterId =
+          this.parseHeadquarterAndWmcDetails(data.HeadquarterId);
+        this.orderSearchModel.EnergyTypeId = data.EnergyTypeId;
+        this.searchOrdersAndCrews();
+      }
+    });
+  }
+
+  getDataForDropDowns() {
+    this.schedulerService.getDropdownData('scheduler').subscribe(
+      (res) => {
+        this.spinner.hide();
+        this.dropDownData = res.wfDropdownDetails;
+      }
+    );
+  }
+
+  parseHeadquarterAndWmcDetails(ids: string[]): string {
+    if (!ids || ids.length === 0) {
+      return '';
+    }
+    var output = ids[0];
+    for (var i = 1, len = ids.length; i < len; i++) {
+      output += ',' + ids[i];
+    }
+    return output;
+  }
+
+  searchOrdersAndCrews() {
+    //this.getOrderData();
+    this.getScheduledOrderData();
+    this.getCrewData();
+  }
+
+  getOrderData() {
+    this.schedulerService.getOrdersForScheduling(this.orderCrewSearchModel).subscribe(
+      (res) => {
+        this.lstOrder = res.orderDetails;
+        //get only those orders selected in Workload tab
+        this.lstOrder = this.lstOrder.filter(
+          order => order.isSelected == 'Y'
+        );
+        this.lstOrder.forEach((order) => {
+          let colSpan = (parseInt(order['noOfHours']) < 4 || order['noOfHours'] == null) ? 4 : parseInt(order['noOfHours']) > 13 ? 13 : parseInt(order['noOfHours']);
+          order['OrderStyle'] = {
+            'background-color': (order.orderCategory == 'Compliance' || order.custComm == 'Y') ? '#f38989' :
+              order.orderCategory == 'COTD' ? '#ABFFA3' : null,
+            'color': (order.orderCategory == 'Compliance' || order.custComm == 'Y') ? 'white' : 'black',
+            'border': '1px solid black',
+            'grid-column': '1 / span ' + colSpan
+          }
+        });
+        this.allOrders = JSON.parse(JSON.stringify(this.lstOrder));// [...this.lstOrder];
+      });
+  }
+
+  getCrewData() {
+    this.schedulerService.getCrewsForScheduling(this.orderCrewSearchModel).subscribe(
+      (res) => {
+        this.lstCrew = res.crewInfo;
+        this.displayCrewOrderInfo = true;
+
+        this.spinner.hide();
+
+      });
+  }
+
+  getScheduledOrderData() {
+    this.schedulerService.getOrdersData(this.orderSearchModel).subscribe(
+      (res) => {
+        this.lstOrder = res.orderDetails;
+        this.orderInfo = true;
+
+        this.spinner.hide();
+
+      });
+  }
+
+  // searchOrders(): void {
+  //   this.displayOrderList = false;
+  //   this.schedulerService
+  //     .getOrdersData(this.orderSearchModel)
+  //     .subscribe((res) => {
+  //       this.orderList = res.orderDetails;
+  //       this.displayOrderList = true;
+
+  //       this.spinner.hide();
+  //     });
+  // }
+
+  resetSearchData() {
+    Object.keys(this.orderCrewSearchModel).forEach(
+      (key) => this.orderCrewSearchModel[key] = ''
+    );
+  }
+
+  onMouseEnter(crewId, day) {
+    this.schedulerService.mapToCrew = {
+      crewId,
+      day
+    }
+  }
+
+  parseNumber(noToParse) {
+    return isNaN(parseInt(noToParse)) ? 0 : parseInt(noToParse)
+  }
+
+  drop(event) {
+    //find the crew to which we are mapping the order
+    let crew = this.lstCrew.find(crew => crew.CrewId == this.schedulerService.mapToCrew.crewId);
+    let day = this.schedulerService.mapToCrew.day;
+    let dayAvailableCapacity = crew[day]['AvailableCapacity'];
+
+    //check if crew capacity for the day is fully assigned
+    if (dayAvailableCapacity == 0) {
+      this.schedulerService.mapToCrew = null;
+      alert('Crew capacity reached');
+    }
+
+    if (this.schedulerService.mapToCrew != null) {
+      this.adjustCapacity(event, crew);
+    }
+  }
+
+  //event: drop event
+  //crew: crew to which the dragged/selected order to be mapped
+  adjustCapacity(event, crew) {
+    //get the dragged/selected order
+    let selectedOrder = this.lstOrder[event.previousIndex];
+
+    this.openModal(event, selectedOrder, crew);
+  }
+
+  openModal(event, selectedOrder, crew) {
+    //open modal to adjust job hours and crew capacity before mapping order to crew
+    const modalOptions: NgbModalOptions = {
+      size: 'sm',
+      keyboard: false,
+      backdrop: 'static'
+    };
+    const modalRef = this.modalService.open(MapCrewOrderComponent, modalOptions);
+    modalRef.componentInstance.inputJobHours = selectedOrder['noOfHours'];
+    let day = this.schedulerService.mapToCrew.day;
+    modalRef.componentInstance.inputCrewCapacity = (crew[day]['UpdatedCapacity'] == null || crew[day]['UpdatedCapacity'] == "")
+      ? crew[day]['Capacity'] : crew[day]['UpdatedCapacity'];
+    modalRef.componentInstance.outputCapacity.subscribe((emittedValue) => {
+      //get the updated job hours and crew capacity from modal
+      this.updatedHours = emittedValue;
+    })
+    modalRef.result.then((resolveReason) => {
+      if (resolveReason == 'save') {
+        this.mapOrderToCrew(event, selectedOrder, crew);
+      }
+      else if (resolveReason == 'cancel' || resolveReason == 'close') {
+        this.schedulerService.mapToCrew = null;
+      }
+    });
+  }
+
+  mapOrderToCrew(event, selectedOrder, crew) {
+    let day = this.schedulerService.mapToCrew.day;
+
+    let jobHours = 0;
+    //if user updates the selected job hours, update it in orders list and use the updated job hours
+    jobHours = this.updatedHours.JobHours;
+    selectedOrder['noOfHours'] = this.updatedHours.JobHours;
+
+    let crewDayCapacity = 0;
+    //if user updates the crew capacity, update the capacity in crew list and use the updated value
+    crew[day]['UpdatedCapacity'] = this.updatedHours.CrewCapacity;
+    crew[day]['AvailableCapacity'] = this.updatedHours.CrewCapacity;
+    crewDayCapacity = this.updatedHours.CrewCapacity;
+
+    let mappedJobHours = 0;
+    if (jobHours > crewDayCapacity) {
+      //from the selected order/job, subtract the hours assigned to crew
+      selectedOrder['noOfHours'] = jobHours - crewDayCapacity;
+      crew[day]['AvailableCapacity'] = 0;
+      mappedJobHours = crewDayCapacity;
+    }
+    else {
+      //remove selected order from list
+      this.lstOrder.splice(event.previousIndex, 1);
+      //update the available capacity (remove assigned job hours from total capacity)
+      crew[day]['AvailableCapacity'] = crewDayCapacity - jobHours;
+      mappedJobHours = selectedOrder['noOfHours']
+    }
+
+    //map selected order to crew
+    crew[day]['OrdersList'].push({
+      orderKey: selectedOrder['orderKey'],
+      orderDesc: selectedOrder['description'],
+      noOfHours: mappedJobHours,
+      orderStyle: (selectedOrder.orderCategory == 'Compliance' || selectedOrder.custComm == 'Y') ? 'orderRowCompCustComm' :
+        selectedOrder.orderCategory == 'COTD' ? 'orderRowCOTD' : null
+    });
+
+    this.schedulerService.mapToCrew = null;
+  }
+
+  removeMapping(key, crewId, day) {
+    //find the crew from which order has to be removed
+    let crew = this.lstCrew.find(crew => crew.CrewId == crewId);
+
+    this.addOrderBackToOrderList(key, crew, day);
+    this.removeOrderFromCrew(key, crew, day);
+  }
+
+  addOrderBackToOrderList(key, crew, day) {
+    //find the order to remove from crew mapping. 
+    let addOrderBack = JSON.parse(JSON.stringify(this.allOrders.find(order => order.orderKey == key)));
+
+    //check if order is already in orderslist
+    let orderAlreadyExists = this.lstOrder.find(order => order.orderKey == key);
+
+    //from the crew list, find the order for which mapping has to be removed, and get the no of job hours mapped to that crew
+    let orderToRemoveFromCrew = crew[day]['OrdersList'].filter(order => order.orderKey == key);
+    addOrderBack['noOfHours'] = orderToRemoveFromCrew[0]['noOfHours'];
+
+    if (orderAlreadyExists) {
+      //if order already exists, add the mapped hours back to the order list
+      orderAlreadyExists['noOfHours'] += this.parseNumber(addOrderBack['noOfHours']);
+    }
+    else {
+      //add the order back to order list
+      this.lstOrder.push(addOrderBack);
+    }
+
+    //add the removed job hours back to the day capacity of crew 
+    crew[day]['AvailableCapacity'] += this.parseNumber(orderToRemoveFromCrew[0]['noOfHours']);
+  }
+
+  removeOrderFromCrew(key, crew, day) {
+    //remove the order
+    crew[day]['OrdersList'] = crew[day]['OrdersList'].filter(order => order.orderKey != key);
+  }
+
+  reviewSchedule() {
+
+  }
+
+  finalizeSchedule() {
+    console.log(this.lstCrew);
+  }
+}
