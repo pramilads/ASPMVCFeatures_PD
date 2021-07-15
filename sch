@@ -1,217 +1,176 @@
 <div class="col-12" [hidden]="!schedulerService.expandSearch">
-    <!-- <div class="row">
-        <div class="col-12 col-md-8">
-            <div class="form-group row">
-                <label class="col-sm-7 col-form-label text-md-right">Work Type: </label>
-                <div class="col-sm-5">
-                    <select class="form-control" [(ngModel)]="orderCrewSearchModel.WorkType">
-                        <option *ngFor="let data of dropDownData | ddlFilter : 'WorkType'" [value]="data.id">
-                            {{data.name}}
-                        </option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div> -->
-
     <div class="row mt-3">
         <div class="col text-center">
-            <button type="submit" class="btn btn-primary btn-sm mr-2" (click)="searchOrdersAndCrews()">Search</button>
-            <button type="reset" class="btn btn-primary btn-sm" (click)="resetSearchData()">Reset</button>
+            <!-- <button type="submit" class="btn btn-primary btn-sm mr-2" (click)="searchOrdersAndCrews()">Search</button>
+            <button type="reset" class="btn btn-primary btn-sm" (click)="resetSearchData()">Reset</button> -->
         </div>
     </div>
 </div>
 
-<div class="container">
-    <div class="row" cdkDropListGroup>
-        <div class="col-6" *ngIf="displayCrewOrderInfo">
-            <div class="row scheduler header-row">
-                <div class="col">
-                    <h3>Crew Information</h3>
+<div class="pagewrapper">
+    <section class="todos-section-wrapper">
+
+        <div class="left-card">
+            <!-- <div cdkDropList #todoList="cdkDropList" [cdkDropListData]="todos"
+                [cdkDropListConnectedTo]="[completedList]" class="list" (cdkDropListDropped)="drop($event)">
+                <div class="todo-item" *ngFor="let todo of todos" cdkDrag>
+                    <div class="cardContainer">
+                        <mat-card class="card">
+                            <mat-card-header class="card-header">
+                                <mat-card-title class="card-title">{{todo.firstName}}</mat-card-title>
+                            </mat-card-header>
+                            <mat-card-content class="card-content">
+                                <div>
+                                    Last Name : - {{todo.lastName}}
+                                </div>
+                                <div>
+                                    Designation - {{todo.designation}}
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <table class="scheduler table table-bordered table-sm">
-                        <thead>
-                            <tr>
-                                <th>Crew</th>
-                                <th>Mon</th>
-                                <th>Tues</th>
-                                <th>Wed</th>
-                                <th>Thur</th>
-                                <th>Fri</th>
-                                <th>Sat</th>
-                                <th>Sun</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let crew of lstCrew" cdkDropList>
-                                <td style="background-color: #e9ecef;">
-                                    Crew Id: {{crew.CrewId}}
-                                    <br />
-                                    <br />
-                                    Crew Type: {{crew.CrewType}}
-                                    <br />
-                                    <br />
-                                    Truck: {{crew.Truck}}
-                                    <br />
-                                    <br />
-                                    Comments: {{crew.Comments}}
-                                </td>
-                                <td (mouseenter)="onMouseEnter(crew.CrewId, 'Monday')">
-                                    <p>Available Capacity: <span
-                                            style="font-weight: bold;">{{crew.Monday.AvailableCapacity}}</span></p>
-                                    <!-- <p *ngFor="let order of crew.Monday.OrdersList" [ngClass]="order.orderStyle">
-                                        {{order.orderKey}}-{{order.orderDesc}}<i style="padding-left: 4px;"
-                                            class="fa fa-minus-square" title="Remove Mapping"
-                                            (click)="removeMapping(order.orderKey, crew.CrewId, 'Monday')"></i></p> -->
-                                </td>
-                                <td (mouseenter)="onMouseEnter(crew.CrewId, 'Tuesday')">
-                                    <p>Available Capacity: <span
-                                            style="font-weight: bold;">{{crew.Tuesday.AvailableCapacity}}</span></p>
-                                    <!-- <p *ngFor="let order of crew.Tuesday.OrdersList" [ngClass]="order.orderStyle">
-                                        {{order.orderKey}}-{{order.orderDesc}}<i style="padding-left: 4px;"
-                                            class="fa fa-minus-square" title="Remove Mapping"
-                                            (click)="removeMapping(order.orderKey, crew.CrewId, 'Tuesday')"></i></p> -->
-                                </td>
-                                <td (mouseenter)="onMouseEnter(crew.CrewId, 'Wednesday')">
-                                    <p>Available Capacity: <span
-                                            style="font-weight: bold;">{{crew.Wednesday.AvailableCapacity}}</span></p>
-                                    <!-- <p *ngFor="let order of crew.Wednesday.OrdersList" [ngClass]="order.orderStyle">
-                                        {{order.orderKey}}-{{order.orderDesc}}<i style="padding-left: 4px;"
-                                            class="fa fa-minus-square" title="Remove Mapping"
-                                            (click)="removeMapping(order.orderKey, crew.CrewId, 'Wednesday')"></i></p> -->
-                                </td>
-                                <td (mouseenter)="onMouseEnter(crew.CrewId, 'Thursday')">
-                                    <p>Available Capacity: <span
-                                            style="font-weight: bold;">{{crew.Thursday.AvailableCapacity}}</span></p>
-                                    <!-- <p *ngFor="let order of crew.Thursday.OrdersList" [ngClass]="order.orderStyle">
-                                        {{order.orderKey}}-{{order.orderDesc}}<i style="padding-left: 4px;"
-                                            class="fa fa-minus-square" title="Remove Mapping"
-                                            (click)="removeMapping(order.orderKey, crew.CrewId, 'Thursday')"></i></p> -->
-                                </td>
-                                <td (mouseenter)="onMouseEnter(crew.CrewId, 'Friday')">
-                                    <p>Available Capacity: <span
-                                            style="font-weight: bold;">{{crew.Friday.AvailableCapacity}}</span></p>
-                                    <!-- <p *ngFor="let order of crew.Friday.OrdersList" [ngClass]="order.orderStyle">
-                                        {{order.orderKey}}-{{order.orderDesc}}<i style="padding-left: 4px;"
-                                            class="fa fa-minus-square" title="Remove Mapping"
-                                            (click)="removeMapping(order.orderKey, crew.CrewId, 'Friday')"></i></p> -->
-                                </td>
-                                <td (mouseenter)="onMouseEnter(crew.CrewId, 'Saturday')">
-                                    <p>Available Capacity: <span
-                                            style="font-weight: bold;">{{crew.Saturday.AvailableCapacity}}</span></p>
-                                    <!-- <p *ngFor="let order of crew.Saturday.OrdersList" [ngClass]="order.orderStyle">
-                                        {{order.orderKey}}-{{order.orderDesc}}<i style="padding-left: 4px;"
-                                            class="fa fa-minus-square" title="Remove Mapping"
-                                            (click)="removeMapping(order.orderKey, crew.CrewId, 'Saturday')"></i></p> -->
-                                </td>
-                                <td (mouseenter)="onMouseEnter(crew.CrewId, 'Sunday')">
-                                    <p>Available Capacity: <span
-                                            style="font-weight: bold;">{{crew.Sunday.AvailableCapacity}}</span></p>
-                                    <!-- <p *ngFor="let order of crew.Sunday.OrdersList" [ngClass]="order.orderStyle">
-                                        {{order.orderKey}}-{{order.orderDesc}}<i style="padding-left: 4px;"
-                                            class="fa fa-minus-square" title="Remove Mapping"
-                                            (click)="removeMapping(order.orderKey, crew.CrewId, 'Sunday')"></i></p> -->
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            </div> -->
+
+
+            <div *ngIf="showCrewCompostionTableData()">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <!-- <th></th> -->
+                            <th>Crew</th>
+                            <th width="140px">Mon</th>
+                            <th width="140px">Tue</th>
+                            <th width="140px">Wed</th>
+                            <th width="140px">Thur</th>
+                            <th width="140px">Fri</th>
+                            <th width="140px" *ngIf="checkWorkPeriod()" >Sat</th>
+                            <th width="140px" *ngIf="checkWorkPeriod()">Sun</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let items of membersDetails; let tdi= index">
+                            <!-- <td style="vertical-align: top; width: 0%;">
+                            </td> -->
+
+                            <td style="min-width: 150px;vertical-align: top;">
+                                <span class="rowItems " style="text-align: left; font-weight: bold;">
+                                    {{ items['employee_Name'] }}
+                                </span>
+                                <span>
+                                    <span class="rowItems " style="text-align: right;">
+
+
+                                        <!-- {{ item.employee_Name }}: -->
+                                        <!-- <span *ngIf="items[0].mondayShiftDetails">{{checkDay('M',items[0].mondayShiftDetails)}}</span>
+                            <span *ngIf="items[0].tuesdayShiftDetails">{{checkDay('T',items[0].tuesdayShiftDetails)}}</span>
+                            <span *ngIf="items[0].wednesdayShiftDetails">{{checkDay('W',items[0].wednesdayShiftDetails)}}</span>
+                            <span *ngIf="items[0].thursdayShiftDetails">{{checkDay('R',items[0].thursdayShiftDetails)}}</span>
+                            <span *ngIf="items[0].fridayShiftDetails">{{checkDay('F',items[0].fridayShiftDetails)}}</span>
+                            <span *ngIf="items[0].saturdayShiftDetails">{{checkDay('S',items[0].saturdayShiftDetails)}}</span>
+                            <span *ngIf="items[0].sundayShiftDetails">{{checkDay('U',items[0].sundayShiftDetails)}}</span> -->
+                                    </span>
+                                </span>
+                                <span class="rowItems" style=" text-align: left; font-weight: bold; ">
+                                    <!-- FOR TESTING ADDED CREW-ID -->
+                                    <!-- CREW-ID: {{items['crewId']}} -->
+                                    <br> Type: {{items['crew_Type']}}
+                                </span>
+                                <span class="rowItems"
+                                    style=" text-align: left; font-weight: bold;word-wrap: inherit; ">
+                                    TruckID: {{items['truck_Name']}}
+                                </span>
+                                <span class="rowItems" style=" text-align: left; font-weight: bold; ">
+                                    WMC: {{items['wmc_Name']}}
+                                </span>
+                                <span class="rowItems"
+                                    style=" text-align: left; font-weight: bold;word-wrap: inherit; ">
+                                    Headquarter: {{items['headquarters_Name']}}
+                                </span>
+                                <br>
+                            </td>
+
+                            <td>
+                                <div cdkDropList #todoList="cdkDropList" [cdkDropListData]="todos"
+                                    [cdkDropListConnectedTo]="[completedList]" class="list"
+                                    (cdkDropListDropped)="drop($event)">
+                                    {{items['Monday']}}
+                                </div>
+                            </td>
+                            <td>
+                                {{items['Tuesday']}}
+                            </td>
+                            <td>
+                                {{items['Wednesday']}}
+                            </td>
+                            <td>
+                                {{items['Thursday']}}
+                            </td>
+                            <td>
+                                {{items['Friday']}}
+                            </td>
+                            <td *ngIf="checkWorkPeriod()" >
+                                {{items['Saturday']}}
+                            </td>
+                            <td *ngIf="checkWorkPeriod()">
+                                {{items['Sunday']}}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table><br><br><br>
             </div>
         </div>
-        <!-- </div>
-    <div class="row"> -->
-        <div class="col-6" *ngIf="orderInfo">
-            <div class="row scheduler header-row">
-                <div class="col">
-                    <h3>Jobs available / Ready for work</h3>
-                </div>
-            </div>
-            <div class="row" *ngIf="lstOrder.length > 0">
-                <div class="col" style="overflow: scroll;height: 500px;
-                    border-radius: 1px;
-                    border:#dee2e6 1px solid;
-                    padding: 10px">
-                    <div class="orderContainer" cdkDropList #lstOrderList="cdkDropList" [cdkDropListData]="lstOrder"
-                        (cdkDropListDropped)="drop($event)">
 
-                        <div *ngFor="let card of lstOrder; let cardIndex = index ; ">
+        <div class="right-card" *ngIf="lstOrder!== null && lstOrder.length > 0">
+            <div cdkDropList #completedList="cdkDropList" [cdkDropListData]="completed"
+                [cdkDropListConnectedTo]="[todoList]" class="list" (cdkDropListDropped)="drop($event)">
 
-                            <div style="width: 30%;height: 100px;">
+                <mat-toolbar color="primary">
+                </mat-toolbar>
+                <div class="content">
+                    <div fxLayout="row wrap" fxLayoutGap="16px grid">
+                        <div [fxFlex]="(100/gridColumns) + '%'" fxFlex.xs="100%" fxFlex.sm="50%"
+                            *ngFor="let card of lstOrder" cdkDrag>
+                            <mat-card class="mat-elevation-z4 "  [ngStyle]="{'border-left': getColor(card.mat) }">`
+                                <mat-card-header>
+                                    <mat-card-title style="font-size: 11px;"><b> {{card.orderKey}}</b></mat-card-title>
+                                    <!-- <mat-card-subtitle>{{card.orderKey}}<mat-card-subtitle> -->
 
-                                <mat-card>
-                                    <mat-card-header>
-                                        <div mat-card-avatar></div>
-                                        <mat-card-title>{{card.orderKey }} </mat-card-title>
-                                        <mat-card-subtitle>{{card.description}}</mat-card-subtitle>
-                                    </mat-card-header>
-                                    <div mat-card-image></div>
-                                    <mat-card-content>
-                                        <div style="display:inline-flex;">
-                                            <div>
-                                                <p>Work Center
-                                                </p>
-                                            </div>
-                                            <div>
-                                                {{card.plant}}
-                                            </div>
+                                </mat-card-header>
+                                <mat-card-content>
+                                    <div style="width: 100%; font-size: 9px;">
+                                        <div>
+                                            <p> WorkCenter : {{card.plant}}</p>
                                         </div>
                                         <div>
-                                            <div>
-                                                <p>Order Type
-                                                </p>
-                                            </div>
-                                            <div>
-                                                {{card.orderType}}
-                                            </div>
+                                            <p>
+                                                OrderType : {{card.orderType}} </p>
                                         </div>
                                         <div>
-                                            <div>
-                                                <p>Mat Type
-                                                </p>
-                                            </div>
-                                            <div>
-                                                {{card.mat}}
-                                            </div>
+                                            <p>
+                                                MatType : {{card.mat}}</p>
                                         </div>
                                         <div>
-                                            <div>
-                                                <p>Basic Finish
-                                                </p>
-                                            </div>
-                                            <div>
-                                                {{card.basicFinishDate}}
-                                            </div>
+                                            <p>
+                                                BasicFinish : {{card.basicFinishDate}}</p>
                                         </div>
                                         <div>
-                                            <div>
-                                                <p>Comments
-                                                </p>
-                                            </div>
-                                            <div>
-                                                {{card.comments}}
-                                            </div>
+                                            <p>
+                                                Comment : {{card.comments}}</p>
                                         </div>
-                                    </mat-card-content>
-                                    <mat-card-actions>
-                                        <button mat-button>LIKE</button>
-                                        <button mat-button>SHARE</button>
-                                    </mat-card-actions>
-                                </mat-card>
-                            </div>
+                                    </div>
+                                </mat-card-content>
+                                <mat-card-actions>
+                                    <!-- <button mat-button>LIKE</button>
+                                    <button mat-button>SHARE</button> -->
+                                </mat-card-actions>
+                            </mat-card>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="row mt-3">
-        <div class="col text-center">
-            <button type="submit" class="btn btn-primary btn-lg mr-2" (click)="reviewSchedule()">Publish/Review</button>
-            <button type="submit" class="btn btn-primary btn-lg" (click)="finalizeSchedule()">Finalize</button>
         </div>
-    </div>
+    </section>
 </div>
