@@ -1,0 +1,106 @@
+{
+  "crewInfo": [
+    {
+      "employee_Name": "TODD M ABRAM",
+      "CrewId": "1",
+      "Truck": "678",
+      "CrewType": "BOREr",
+      "Comments": "FGF",
+      "Monday": "",
+      "Tuesday": "",
+      "Wednesday": "",
+      "Thursday": "",
+      "Friday": "",
+      "Saturday": "",
+      "Sunday":"",
+      "description": "2 Des",
+      "orderCategory": "2 Cat ",
+      "comments": "2 Comme",
+      "noOfHours": "2 hrs"
+    },
+    {
+      "employee_Name": "JOSEPH",
+      "CrewId": "1",
+      "Truck": "678",
+      "CrewType": "BOREr",
+      "Comments": "FGF",
+      "Monday": "",
+      "Tuesday": "",
+      "Wednesday": "",
+      "Thursday": "",
+      "Friday": "",
+      "Saturday": "",
+      "Sunday":"",
+      "description": "2 Des",
+      "orderCategory": "2 Cat ",
+      "comments": "2 Comme",
+      "noOfHours": "2 hrs"
+    },{
+      "employee_Name": "STEVE",
+      "CrewId": "1",
+      "Truck": "678",
+      "CrewType": "BOREr",
+      "Comments": "FGF",
+      "Monday": "07:00 - 09:00",
+      "Tuesday": "09:00 - 11:00",
+      "Wednesday": "09:00 - 11:00",
+      "Thursday": "17:00 - 20:00",
+      "Friday": "22:00 - 22:00",
+      "Saturday": "07:00 - 09:00",
+      "Sunday":"11:00 - 19:00",
+      "description": "2 Des",
+      "orderCategory": "2 Cat ",
+      "comments": "2 Comme",
+      "noOfHours": "2 hrs"
+    },{
+      "employee_Name": "FRANK",
+      "CrewId": "1",
+      "Truck": "678",
+      "CrewType": "BOREr",
+      "Comments": "FGF",
+      "Monday": "07:00 - 09:00",
+      "Tuesday": "09:00 - 11:00",
+      "Wednesday": "09:00 - 11:00",
+      "Thursday": "17:00 - 20:00",
+      "Friday": "22:00 - 22:00",
+      "Saturday": "07:00 - 09:00",
+      "Sunday":"11:00 - 19:00",
+      "description": "2 Des",
+      "orderCategory": "2 Cat ",
+      "comments": "2 Comme",
+      "noOfHours": "2 hrs"
+    },
+    {
+      "employee_Name": " SARA k",
+      "CrewId": "2",
+      "Truck": "999",
+      "CrewType": "PLANNING",
+      "Comments": "UKU",
+     "Monday": "07:00 - 09:00",
+      "Tuesday": "09:00 - 11:00",
+      "Wednesday": "09:00 - 11:00",
+      "Thursday": "17:00 - 20:00",
+      "Friday": "22:00 - 22:00",
+      "Saturday": "07:00 - 09:00",
+      "Sunday":"11:00 - 19:00",
+      "description": "12 Des",
+      "orderCategory": "12 Cat ",
+      "comments": "12 Comme",
+      "noOfHours": "12 hrs"
+    }
+  ],
+  "OrderList": [
+    {
+      "description": "12 Des",
+      "orderCategory": "12 Cat ",
+      "comments": "12 Comme",
+      "noOfHours": "12 hrs"
+    },
+    {
+      "description": "3 Des",
+      "orderCategory": "3 Cat ",
+      "comments": "3 Comme",
+      "noOfHours": "3 hrs"
+    }
+  ]
+}
