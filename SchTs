@@ -1,20 +1,20 @@
 import { Component } from '@angular/core';
 import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
-import { OrderSearchModel } from './../../shared/models/search.model';
-import { OrderCrewSearchModel, UpdatedHours } from './../../shared/models/search.model';
-import { SchedulerService } from './../../core/services/scheduler.service';
+import { OrderSearchModel } from '../../shared/models/search.model';
+import { OrderCrewSearchModel, UpdatedHours } from '../../shared/models/search.model';
+import { SchedulerService } from '../../core/services/scheduler.service';
 import { MapCrewOrderComponent } from './map-crew-orders/map-crew-order.component';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Subscription } from 'rxjs';
 import { FilterService } from 'src/app/shared/services/filter.service';
-
-import {CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
-
-
+import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { DatePipe } from '@angular/common';
+import { FixedSizeVirtualScrollStrategy } from '@angular/cdk/scrolling';
 
 @Component({
   selector: 'scheduler',
-  templateUrl: './scheduler.component.html'
+  templateUrl: './scheduler.component.html',
+  styleUrls: ['./scheduler.component.css']
 })
 export class SchedulerComponent {
   private subscription: Subscription;
@@ -30,12 +30,21 @@ export class SchedulerComponent {
   dropDownData: any;
   updatedHours: UpdatedHours;
 
+  gridColumns = 2;
+  schedulerData = [];
+  membersDetails = [];
+  selectedWorkPeriod = "";
+
   constructor(public schedulerService: SchedulerService, private modalService: NgbModal,
-    private spinner: NgxSpinnerService,   
+    private spinner: NgxSpinnerService, private datePipe: DatePipe,
     private filterService: FilterService,) {
   }
 
   ngOnInit() {
+
+    this.schedulerData = JSON.parse(localStorage.getItem('scheduler'));
+    // this.selectedWorkPeriod = this.schedulerData['WorkPeriod'];
+
     this.orderSearchModel = new OrderSearchModel();
 
     this.orderCrewSearchModel = new OrderCrewSearchModel();
@@ -43,20 +52,124 @@ export class SchedulerComponent {
 
 
     this.subscription = this.filterService.data.subscribe((data) => {
-      if (data && ( this.schedulerService?.tabName == 'scheduler' )) {
-        this.orderSearchModel.DateFrom = data.DateFrom;
-        this.orderSearchModel.DateTo = '4/11/2020';
+      if (data && (this.schedulerService?.tabName == 'scheduler')) {
+        this.orderSearchModel.WeekOf = data.DateFrom;
 
         this.orderSearchModel.WorkPeriod = data.WorkPeriod;
         this.orderSearchModel.WmcId = this.parseHeadquarterAndWmcDetails(
           data.WmcId
         );
-        this.orderSearchModel.HeadquarterId =
+        this.orderSearchModel.HeadquarterIds =
           this.parseHeadquarterAndWmcDetails(data.HeadquarterId);
         this.orderSearchModel.EnergyTypeId = data.EnergyTypeId;
         this.searchOrdersAndCrews();
       }
     });
+  }
+
+  getExistingCrews(data) {
+    var headquarterIds = "";
+    var ind = 0;
+    var dataLength = data.HeadquarterId.length;
+    if (dataLength > 0) {
+      for (let id of data.HeadquarterId) {
+        ind = ind + 1;
+        headquarterIds += id;
+
+        if (ind !== dataLength) {
+          headquarterIds += ",";
+        }
+      }
+      var dateFrom = this.datePipe.transform(data.DateFrom, 'M/dd/yy');
+
+      var Data = {
+        "WeekOf": dateFrom,
+        "EnergyType": data.EnergyTypeId,
+        "HeadquarterIds": headquarterIds
+      };
+
+      this.schedulerService.getExistingCrews(Data).subscribe(
+        (res) => {
+          this.membersDetails = res['membersDetails'];
+          // // this.shiftDetails = res['shiftDetails'];
+          var CrewId = 0;
+
+          for (let sObj of this.membersDetails) {
+
+            sObj['mondayShiftDetails'] = [];
+            sObj['tuesdayShiftDetails'] = [];
+            sObj['wednesdayShiftDetails'] = [];
+            sObj['thursdayShiftDetails'] = [];
+            sObj['fridayShiftDetails'] = [];
+            sObj['saturdayShiftDetails'] = [];
+            sObj['sundayShiftDetails'] = [];
+
+            // CrewId = CrewId + 1;
+            // this.combineMemberdetails(sObj, CrewId);
+          }
+          this.displayCrewOrderInfo = true;
+          // console.log(this.membersDetails);
+        }
+      )
+    }
+  }
+
+  checkWorkPeriod() {
+    var schData = JSON.parse(localStorage.getItem('scheduler'));
+
+    if (schData.WorkPeriod === 'Both') {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+  showCrewCompostionTableData() {
+    if (this.displayCrewOrderInfo && this.membersDetails.length > 0) { return true }
+  }
+
+  toggleGridColumns() {
+    this.gridColumns = this.gridColumns === 3 ? 4 : 3;
+  }
+
+  getColor(type) {
+    var color = "";
+
+    if (type === "OHL") {
+      color = "4px solid red;";
+    }
+    else if (type === "UGL") {
+      color = "4px solid green;";
+    }
+    else {
+      color = "4px solid blue;";
+    }
+
+    return color;
+
+  }
+
+  drop(event: CdkDragDrop<string[]>) {
+
+    if (event.previousContainer === event.container) {
+
+      moveItemInArray(
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+
+    } else {
+
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+
+    }
   }
 
   getDataForDropDowns() {
@@ -80,9 +193,10 @@ export class SchedulerComponent {
   }
 
   searchOrdersAndCrews() {
+    this.getExistingCrews(this.schedulerData);
     //this.getOrderData();
     this.getScheduledOrderData();
-    this.getCrewData();
+    // this.getCrewData();
   }
 
   getOrderData() {
@@ -108,7 +222,7 @@ export class SchedulerComponent {
   }
 
   getCrewData() {
-    this.schedulerService.getCrewsForScheduling(this.orderCrewSearchModel).subscribe(
+    this.schedulerService.getExistingCrews(this.orderCrewSearchModel).subscribe(
       (res) => {
         this.lstCrew = res.crewInfo;
         this.displayCrewOrderInfo = true;
@@ -158,22 +272,7 @@ export class SchedulerComponent {
     return isNaN(parseInt(noToParse)) ? 0 : parseInt(noToParse)
   }
 
-  drop(event) {
-    //find the crew to which we are mapping the order
-    let crew = this.lstCrew.find(crew => crew.CrewId == this.schedulerService.mapToCrew.crewId);
-    let day = this.schedulerService.mapToCrew.day;
-    let dayAvailableCapacity = crew[day]['AvailableCapacity'];
 
-    //check if crew capacity for the day is fully assigned
-    if (dayAvailableCapacity == 0) {
-      this.schedulerService.mapToCrew = null;
-      alert('Crew capacity reached');
-    }
-
-    if (this.schedulerService.mapToCrew != null) {
-      this.adjustCapacity(event, crew);
-    }
-  }
 
   //event: drop event
   //crew: crew to which the dragged/selected order to be mapped
