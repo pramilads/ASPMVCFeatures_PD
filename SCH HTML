@@ -1,0 +1,313 @@
+<div class="col-12" [hidden]="!schedulerService.expandSearch">
+    <div class="row mt-3">
+        <div class="col text-center">
+            <button mat-button class="mat-raised-button mat-primary" class="btn btn-primary btn-sm mr-2"
+                (click)="reviewSchedule()">
+                <span class="material-icons">
+                    save
+                </span>
+                Publish/Review</button>
+            <br>
+        </div>
+    </div>
+</div>
+
+<div class="pagewrapper">
+    <section class="todos-section-wrapper">
+        <div class="left-card">
+            <div *ngIf="showCrewCompostionTableData()">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Crew</th>
+                            <th width="140px" *ngIf=" !IsWeekEnd()">Mon</th>
+                            <th width="140px" *ngIf=" !IsWeekEnd()">Tue</th>
+                            <th width="140px" *ngIf=" !IsWeekEnd()">Wed</th>
+                            <th width="140px" *ngIf=" !IsWeekEnd()">Thur</th>
+                            <th width="140px" *ngIf=" !IsWeekEnd()">Fri</th>
+                            <th width="140px" *ngIf=" IsWeekEnd() || checkWorkPeriod()">Sat</th>
+                            <th width="140px" *ngIf=" IsWeekEnd() || checkWorkPeriod()">Sun</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let items of membersDetails;let i = index">
+
+                            <td style="min-width: 150px;vertical-align: top;">
+                                <span class="rowItems " style="text-align: left; font-weight: bold;">
+                                    {{ items['employee_Name'] }}
+                                </span>
+                                <span>
+                                    <span class="rowItems " style="text-align: right;">
+
+                                        <!-- {{ item.employee_Name }}: -->
+                                        <!-- <span *ngIf="items[0].mondayShiftDetails">{{checkDay('M',items[0].mondayShiftDetails)}}</span>
+                            <span *ngIf="items[0].tuesdayShiftDetails">{{checkDay('T',items[0].tuesdayShiftDetails)}}</span>
+                            <span *ngIf="items[0].wednesdayShiftDetails">{{checkDay('W',items[0].wednesdayShiftDetails)}}</span>
+                            <span *ngIf="items[0].thursdayShiftDetails">{{checkDay('R',items[0].thursdayShiftDetails)}}</span>
+                            <span *ngIf="items[0].fridayShiftDetails">{{checkDay('F',items[0].fridayShiftDetails)}}</span>
+                            <span *ngIf="items[0].saturdayShiftDetails">{{checkDay('S',items[0].saturdayShiftDetails)}}</span>
+                            <span *ngIf="items[0].sundayShiftDetails">{{checkDay('U',items[0].sundayShiftDetails)}}</span> -->
+                                    </span>
+                                </span>
+                                <span class="rowItems" style=" text-align: left; font-weight: bold; ">
+                                    <!-- FOR TESTING ADDED CREW-ID -->
+                                    <!-- CREW-ID: {{items['crewId']}} -->
+                                    <br> Type: {{items['crew_Type']}}
+                                </span>
+                                <span class="rowItems"
+                                    style=" text-align: left; font-weight: bold;word-wrap: inherit; ">
+                                    TruckID: {{items['truck_Name']}}
+                                </span>
+                                <span class="rowItems" style=" text-align: left; font-weight: bold; ">
+                                    WMC: {{items['wmc_Name']}}
+                                </span>
+                                <span class="rowItems"
+                                    style=" text-align: left; font-weight: bold;word-wrap: inherit; ">
+                                    Headquarter: {{items['headquarters_Name']}}
+                                </span>
+                                <br>
+                            </td>
+
+                            <td *ngIf=" !IsWeekEnd()">
+                                <div style="min-height: 100px;" cdkDropList id="{{i}}_monday"
+                                    [cdkDropListData]="items.mondayShiftDetails" [cdkDropListConnectedTo]="connectedTo"
+                                    class="item-list" (cdkDropListDropped)="drop($event)">
+                                    <div class="item-box" *ngFor="let card of items.mondayShiftDetails" cdkDrag>
+                                        <mat-card [popover]="myPopover1" class="mat-elevation-z4 "
+                                            [ngStyle]="{'border-left': getColor(card.mat) }">
+                                            <mat-card-header>
+                                                <mat-card-title><b> {{card.orderKey}}</b>
+                                                    <p>
+                                                        {{card.description}}
+                                                    </p>
+                                                </mat-card-title>
+                                            </mat-card-header>
+                                        </mat-card>
+                                        <popover-content #myPopover1 [animation]="true">
+                                            <app-scheduler-card [card]="card">
+                                            </app-scheduler-card>
+                                        </popover-content>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td *ngIf=" !IsWeekEnd()">
+                                <div style="min-height: 100px;" cdkDropList id="{{i}}_tuesday"
+                                    [cdkDropListData]="items.tuesdayShiftDetails" [cdkDropListConnectedTo]="connectedTo"
+                                    class="item-list" (cdkDropListDropped)="drop($event)">
+
+                                    <div class="item-box" *ngFor="let card of items.tuesdayShiftDetails" cdkDrag>
+                                        <mat-card [popover]="myPopover1" class="mat-elevation-z4 "
+                                            [ngStyle]="{'border-left': getColor(card.mat) }">
+                                            <mat-card-header>
+                                                <mat-card-title style="font-size: 8px; text-align: left;"><b>
+                                                        {{card.orderKey}}</b>
+                                                    <p>
+                                                        {{card.description}}
+                                                    </p>
+                                                </mat-card-title>
+                                            </mat-card-header>
+                                        </mat-card>
+                                        <popover-content #myPopover1 [animation]="true">
+                                            <app-scheduler-card [card]="card">
+                                            </app-scheduler-card>
+                                        </popover-content>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td *ngIf=" !IsWeekEnd()">
+                                <div style="min-height: 100px;" cdkDropList id="{{i}}_wednesday"
+                                    [cdkDropListData]="items.wednesdayShiftDetails"
+                                    [cdkDropListConnectedTo]="connectedTo" class="item-list"
+                                    (cdkDropListDropped)="drop($event)">
+
+                                    <div class="item-box" *ngFor="let card of items.wednesdayShiftDetails" cdkDrag>
+                                        <mat-card [popover]="myPopover1" class="mat-elevation-z4 "
+                                            [ngStyle]="{'border-left': getColor(card.mat) }">
+                                            <mat-card-header>
+                                                <mat-card-title style="font-size: 8px; text-align: left;"><b>
+                                                        {{card.orderKey}}</b>
+                                                    <p>
+                                                        {{card.description}}
+                                                    </p>
+                                                </mat-card-title>
+                                            </mat-card-header>
+                                        </mat-card>
+                                        <popover-content #myPopover1 [animation]="true">
+                                            <app-scheduler-card [card]="card">
+                                            </app-scheduler-card>
+                                        </popover-content>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td *ngIf=" !IsWeekEnd()">
+                                <div style="min-height: 100px;" cdkDropList id="{{i}}_thursday"
+                                    [cdkDropListData]="items.thursdayShiftDetails"
+                                    [cdkDropListConnectedTo]="connectedTo" class="item-list"
+                                    (cdkDropListDropped)="drop($event)">
+
+                                    <div class="item-box" *ngFor="let card of items.thursdayShiftDetails" cdkDrag>
+                                        <mat-card [popover]="myPopover1" class="mat-elevation-z4 "
+                                            [ngStyle]="{'border-left': getColor(card.mat) }">
+                                            <mat-card-header>
+                                                <mat-card-title style="font-size: 8px; text-align: left;"><b>
+                                                        {{card.orderKey}}</b>
+                                                    <p>
+                                                        {{card.description}}
+                                                    </p>
+                                                </mat-card-title>
+                                            </mat-card-header>
+                                        </mat-card>
+                                        <popover-content #myPopover1 [animation]="true">
+                                            <app-scheduler-card [card]="card">
+                                            </app-scheduler-card>
+                                        </popover-content>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td *ngIf=" !IsWeekEnd()">
+                                <div style="min-height: 100px;" cdkDropList id="{{i}}_friday"
+                                    [cdkDropListData]="items.fridayShiftDetails" [cdkDropListConnectedTo]="connectedTo"
+                                    class="item-list" (cdkDropListDropped)="drop($event)">
+                                    <div class="item-box" *ngFor="let card of items.fridayShiftDetails" cdkDrag>
+                                        <mat-card [popover]="myPopover1" class="mat-elevation-z4 "
+                                            [ngStyle]="{'border-left': getColor(card.mat) }">
+                                            <mat-card-header>
+                                                <mat-card-title style="font-size: 8px; text-align: left;"><b>
+                                                        {{card.orderKey}}</b>
+                                                    <p>
+                                                        {{card.description}}
+                                                    </p>
+                                                </mat-card-title>
+                                            </mat-card-header>
+                                        </mat-card>
+                                        <popover-content #myPopover1 [animation]="true">
+                                            <app-scheduler-card [card]="card">
+                                            </app-scheduler-card>
+                                        </popover-content>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td *ngIf="IsWeekEnd() || checkWorkPeriod()">
+                                <div style="min-height: 100px;" cdkDropList id="{{i}}_saturday"
+                                    [cdkDropListData]="items.saturdayShiftDetails"
+                                    [cdkDropListConnectedTo]="connectedTo" class="item-list"
+                                    (cdkDropListDropped)="drop($event)">
+
+                                    <div class="item-box" *ngFor="let card of items.saturdayShiftDetails" cdkDrag>
+                                        <mat-card [popover]="myPopover1" class="mat-elevation-z4 "
+                                            [ngStyle]="{'border-left': getColor(card.mat) }">
+                                            <mat-card-header>
+                                                <mat-card-title style="font-size: 8px; text-align: left;"><b>
+                                                        {{card.orderKey}}</b>
+                                                    <p>
+                                                        {{card.description}}
+                                                    </p>
+                                                </mat-card-title>
+                                            </mat-card-header>
+                                        </mat-card>
+                                        <popover-content #myPopover1 [animation]="true">
+                                            <app-scheduler-card [card]="card">
+                                            </app-scheduler-card>
+                                        </popover-content>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td *ngIf="IsWeekEnd() || checkWorkPeriod()">
+                                <div style="min-height: 100px;" cdkDropList id="{{i}}_sunday"
+                                    [cdkDropListData]="items.sundayShiftDetails" [cdkDropListConnectedTo]="connectedTo"
+                                    class="item-list" (cdkDropListDropped)="drop($event)">
+
+                                    <div class="item-box" *ngFor="let card of items.sundayShiftDetails" cdkDrag>
+                                        <mat-card [popover]="myPopover1" class="mat-elevation-z2 "
+                                            [ngStyle]="{'border-left': getColor(card.mat) }">
+                                            <mat-card-header>
+                                                <mat-card-title style="font-size: 8px; text-align: left;"><b>
+                                                        {{card.orderKey}}</b>
+                                                    <p>
+                                                        {{card.description}}
+                                                    </p>
+                                                </mat-card-title>
+                                            </mat-card-header>
+                                        </mat-card>
+                                        <popover-content #myPopover1 [animation]="true">
+                                            <app-scheduler-card [card]="card">
+                                            </app-scheduler-card>
+                                        </popover-content>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table><br><br><br>
+            </div>
+        </div>
+
+        <div class="right-card">
+            <div id="lstOrderCards" cdkDropList #pendingList="cdkDropList" [cdkDropListData]="lstOrder"
+                [cdkDropListConnectedTo]="connectedTo" class="item-list" (cdkDropListDropped)="drop($event)">
+                <mat-toolbar color="primary">
+                </mat-toolbar>
+                <div class="content">
+                    <div fxLayout="row wrap" fxLayoutGap="8px grid">
+                        <div [fxFlex]="(100/gridColumns) + '%'" fxFlex.xs="100%" fxFlex.sm="100%"
+                            *ngFor="let card of lstOrder" cdkDrag>
+
+                            <mat-card [popover]="myPopover1" class="mat-elevation-z4 "
+                                [ngStyle]="{'border-left': getColor(card) }">
+                                <mat-card-header>
+                                    <mat-card-title style="font-size: 11px; text-align: left;"><b> {{card.orderKey}}</b>
+                                        <p style="font-size: 7px; text-align: left;">
+                                            {{card.description}}
+                                        </p>
+                                    </mat-card-title>
+                                </mat-card-header>
+                                <mat-card-content style="font-size: 8px; text-align: left;  ">
+                                    <div class="row">
+                                        <div class="col-6">WorkCenter</div>
+                                        <div class="col-6"></div>{{card.plant}}
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">OrderType</div>
+                                        <div class="col-6">{{card.orderType}}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">MatType</div>
+                                        <div class="col-6">{{card.mat}}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">BasicFinish</div>
+                                        <div class="col-6">{{card.basicFinishDate}}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">Comment</div>
+                                        <div class="col-6">{{card.comments}}</div>
+                                    </div>
+
+                                    <div class="row" style="font-size: 8px;">
+                                        <div class="col-6"
+                                            style="background-color:lightsteelblue; align-items: flex-end;">
+                                            {{card.headquarters}}</div>
+                                        <!-- <div style="background-color:lightsteelblue; align-items: flex-end;">{{card.headquarters}}</div> -->
+                                        <!-- <div style="background-color :lightsteelblue; align-items: flex-end;">{{card.bore}}</div> -->
+                                    </div>
+                                </mat-card-content>
+
+                            </mat-card>
+                            <popover-content #myPopover1 [animation]="true">
+                                <app-scheduler-card [card]="card">
+                                </app-scheduler-card>
+                            </popover-content>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
