@@ -1,0 +1,481 @@
+@import "~@ng-select/ng-select/themes/default.theme.css";
+
+html {
+    position: relative;
+    min-height: 100%;
+    background-color: #fff;
+}
+
+html,
+body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    min-height: 100%;
+    font-size: 12px;
+    font-family: WellsFargoSans, Verdana, Geneva, Tahoma, sans-serif;
+    color: #3b3331;
+    overflow-x: hidden;
+}
+
+body {
+    width: 100%;
+    position: absolute;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+header {
+    background-color: #3596dc;
+    background-image: url('\assets\images\logo.png');
+    background-repeat: no-repeat;
+    background-size: 130px;/*image size*/
+    background-position-x: 5px;
+    background-position-y: 8px;
+    height: 55px;
+    position: fixed;
+    width: 100%;
+    z-index: 10; /* to hide main-wrapper (content) behind header on scroll */
+}
+
+header h4 {
+    text-align: right;
+    color:  #fff;
+    font-size: 13px;
+    padding: 20px 20px 0px 0px;
+}
+
+.main-wrapper {
+    margin-top: 80px;
+    z-index: 5;/* to hide main-wrapper (content) behind header on scroll */
+}
+
+.card-header {
+    padding: .25rem 1.25rem;
+    background-color: #3596dc;
+    color: white;
+}
+
+.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active
+{
+    color:#3596dc;
+}
+
+.btn-primary {
+    background-color: #3596dc;
+}
+
+.btn-primary:hover, 
+.btn-primary:focus, 
+.btn-primary:active,
+.btn-primary:not(:disabled):not(.disabled):active, 
+.show>.btn-primary.dropdown-toggle{
+        background-color: #2878b1;
+}
+
+.page-link {
+    color: #3596dc;
+}
+
+.page-item.active .page-link{
+    background-color: #3596dc;
+}
+
+.fa-edit {
+    cursor: pointer;
+    color: #3596dc
+}
+
+.fa-caret-down, .fa-caret-left{
+    color: #fff
+}
+
+.caret {
+    cursor: pointer;
+}
+
+button.close, button:hover.close {
+    color:white;
+}
+
+button:focus.close{
+    outline: none;
+}
+
+/*table styles */
+table {
+    font-size: 8px;
+}
+
+th {
+    background-color: #3596dc;
+    color: white;
+    font-weight: normal;
+    align-items: center;
+}
+
+.table tr.disabled {
+    background-color: lightgrey;
+}
+
+th[sortable] {
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+th[sortable].asc:before {
+    font-family: 'FontAwesome';
+    width: 22px;
+    float: left;
+    margin-left: -2px;
+    content: "\f062";
+}
+
+th[sortable].desc:before {
+    font-family: 'FontAwesome';
+    width: 22px;
+    float: left;
+    margin-left: -2px;
+    content: "\f063";
+}
+
+/*modal*/
+.modal-header {
+    background-color: #3596dc;
+    color: #fff;
+}
+
+/*workload tab*/
+.orderPastDate {
+    color: red;
+    font-weight: bolder;
+    font-size: 7px;
+}
+
+.orderFutureDate {
+    color: green;
+    font-weight: bolder;
+    font-size: 7px;
+}
+
+.orderRowCOTD {
+    background-color: #ABFFA3;
+}
+
+.orderRowCompCustComm {
+    background-color: #f38989;
+}
+
+input[type=checkbox][disabled]{
+    outline:1px solid red; 
+    background-color: blue;
+    color:blue
+}
+
+.tdOrderData {
+    text-align: center;
+}
+
+.tdOrderPlanned {
+    background-color: rgb(116, 175, 241);
+}
+
+/***********Scheduler tab: Start*************/
+.orderContainer {
+    display: grid;
+    grid-gap: 0.2rem;
+    grid-auto-columns: 8em;
+    grid-auto-rows: 1.5em;/* this property is required to have equal size rows for orders with same no of hours */
+}
+
+.orderItem {
+    padding-left: 5px;
+    cursor: pointer;
+    font-size: 10px;
+}
+    
+/*on dropping an order in crew table, highligh the cell and change the background color*/
+table.scheduler tr>td:hover:not(:first-child){
+    background-color: lightgray;
+    cursor: pointer;
+}
+
+.scheduler.header-row{
+    margin: 20px;
+    text-align: center;
+    color: #3596dc;
+}
+
+/*table styles in scheduler tab:start*/
+table.scheduler {
+    display: flex;
+    flex-flow: column;
+    width: 100%;
+    font-size: 9px;
+    height: 500px;
+}
+table.scheduler thead {
+    /* head takes the height it requires, 
+    and it's not scaled when table is resized */
+    flex: 0 0 auto;
+    width: calc(100% - 1.9em);
+}
+table.scheduler tbody {
+    /* body takes all the remaining available space */
+    flex: 1 1 auto;
+    display: block;
+    overflow-y: scroll;
+}
+table.scheduler tbody tr {
+    width: 100%;
+    vertical-align: top;
+}
+table.scheduler thead,
+table.scheduler tbody tr {
+    display: table;
+    table-layout: fixed;
+}
+/*table styles in scheduler tab:End*/
+/***********Scheduler tab: End*************/
+
+
+th.mat-header-cell, td.mat-cell {
+    border: 1px solid #dee2e6;
+    align-items: center;
+    font-size: 8px;
+}
+
+th.mat-header-cell {
+    background-color: #3596dc;
+    color: white;
+}
+
+tr.mat-row, tr.mat-header-row {
+    height:20px !important;
+}
+
+.mat-table-container {
+    margin-top: 10px;
+}
+
+th.mat-header-cell, td.mat-cell {
+    text-align: center !important;
+}
+
+td, th {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+.mat-sort-header-container {
+    justify-content: center !important;
+}
+
+.invalid {
+    border: 2px solid #ed5558;
+} 
+
+  .mat-checkbox-checked.mat-accent .mat-checkbox-background {
+    background-color:  #3596dc !important;
+  }
+ 
+  .mat-icon{
+    font-size: 10px;
+    cursor: pointer;
+    vertical-align: left;
+}
+
+.mat-sort-header-container {
+    align-items: center;
+  }
+
+  .mat-form-field {
+    font-size: 14px;
+    width: 100%;
+  }
+  
+::ng-deep th.mat-header-cell{
+    width: 100px;
+    min-width: 100px;
+    text-align: center;
+}
+
+.paddingTop {
+    padding-top: 20px;
+}
+
+.marginBottom {
+    padding-bottom: 20px;
+}
+.headerrow {
+    display: inline-flex;
+    width: 100%;
+}
+
+.addButton {
+    width: 4%;
+    height: 20%;
+    align-self: center;
+    background-color: #3c4b64;
+}
+.rowItems {
+    width: 90%;
+    display: inline-block;
+    font-size: 8px;
+    padding: 2px 0px;
+}
+
+.paddingTop {
+    padding-top: 20px;
+}
+.marginBottom {
+    padding-bottom: 20px;
+
+}
+.addSpan {
+    float: left;
+    width: 100%;
+    text-align: left;
+    padding-left: 13%;
+}
+
+table.mat-table {
+    margin: 0 auto;
+    overflow: hidden;
+    border-spacing: 0;
+    /* width: 965px    ;
+    max-width: 965px    ; */
+
+    width: 1060px    ;
+    max-width: 1060px    ;
+    text-align: center;
+}
+.width-120 {
+    width: 130px;
+    text-align: center;
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 130px;
+}
+.width-100 {
+    width: 90px;
+    text-align: center;
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 90px;
+}
+.width-65 {
+    margin: 0 5px ;
+    width: 63px;
+    text-align: center;
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 63px;
+}
+
+th.mat-header-cell:first-of-type, td.mat-cell:first-of-type {
+    padding-left: 0;
+    text-align: center;
+}
+
+.md-14 {
+    font-size: 14px !important;
+}
+
+table, tr, th, td
+{
+    text-align: left;
+    font-size: 8px;
+    height: 0;
+    border-bottom: 1px solid lightgrey;
+    border-left: 1px solid  lightgrey;
+    border-right: 1px solid lightgrey;
+}
+
+
+[mat-dialog-title] {
+    margin: -24px -24px 0px -24px !important;
+    padding: 10px 24px;
+    background-color: #3596dc;
+    color: white;
+    cursor: move;
+    text-align: center;
+  }
+
+[mat-dialog-actions] {
+    padding: 8px 0;
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 20px;
+    align-items: center;
+}
+  
+::ng-deep.mat-dialog-container {
+  resize: both; 
+  /* overflow: auto; */
+  background: #fff;
+  width: 800px;
+}
+
+/* .paddingBottom {
+    border-bottom: 1px solid rgb(156, 151, 151)
+} */
+
+.paddingTop {
+    padding-top: 20px;
+}
+
+.marginBottom {
+    padding-bottom: 20px;
+}
+
+.slide-toggle-margin {
+  margin: 10px;
+}
+
+.mat-dialog-content {
+  min-height: 10vh;
+}
+
+.mat-row {
+    height: auto;
+    width: auto;
+}
+  
+.mat-cell {
+    /* padding: 8px 8px 8px 0; */
+    font-size: 8px;
+    align-items: center;
+}
+
+/* i.fa-icon { position: absolute; top: 10px; left: 50px; text-align: right; } */
+.rowItems .mat-icon     {
+    font-size: 10px;
+    width: 20px;
+    height: 20px;
+}
+
+.addSpan .mat-icon     {
+    font-size: 11px;
+    width: 20px;
+    height: 20px;
+}
+ 
+ .mat-icon-button {
+    padding: 0;
+    min-width: 0;
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+    line-height: 10px;
+    border-radius: 0%;
+    font-size: small;
+    align-items:flex-start;
+    color: #000;
+}
+
+.mat-header-cell, .mat-cell {
+    padding: 0 10px; 
+  }
